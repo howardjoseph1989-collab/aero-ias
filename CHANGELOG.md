@@ -5,6 +5,12 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ## [Unreleased]
 
+### Changed
+
+- Product display name is now **AERO IAS**. User-facing titles, UI chrome,
+  Pinokio metadata, and package description no longer use God's Eye View or
+  WorldView as the product name. See [NOTICE](NOTICE) for upstream attribution.
+
 ### Fixed
 
 - Mapped-site outages show their scheduled retry countdown and distinguish
