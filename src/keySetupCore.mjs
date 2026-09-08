@@ -14,7 +14,7 @@
 /** Longest accepted key/token value. Real provider keys are all far shorter. */
 export const KEY_SETUP_VALUE_LIMIT = 512;
 
-/** Most env vars accepted in one save. The registry defines nine. */
+/** Most env vars accepted in one save. The registry defines ten. */
 export const KEY_SETUP_UPDATE_LIMIT = 16;
 
 /** Header line written above keys the panel appends to a .env file. */
@@ -40,10 +40,19 @@ export const KEY_SETUP_KEYS = Object.freeze([
   Object.freeze({
     id: 'openai',
     title: 'OPENAI',
-    unlocks: 'Voice control — talk to the planet',
+    unlocks: 'Voice control — OpenAI Realtime (original always-on path)',
     getUrl: 'https://platform.openai.com/api-keys',
     envVars: Object.freeze(['OPENAI_API_KEY']),
     tier: 'metered',
+  }),
+  Object.freeze({
+    id: 'gemini',
+    title: 'GEMINI',
+    unlocks: 'Voice control — Gemini turn-based path (free-tier AI Studio key; same 28 tools)',
+    getUrl: 'https://aistudio.google.com/apikey',
+    envVars: Object.freeze(['GEMINI_API_KEY']),
+    anyOfEnvVars: Object.freeze(['GOOGLE_API_KEY']),
+    tier: 'free',
   }),
   Object.freeze({
     id: 'aisstream',
@@ -297,7 +306,8 @@ export function isKeySetupExternallyManaged({
 export function keySetupStatus(env = {}) {
   const keys = KEY_SETUP_KEYS.map((entry) => {
     const values = entry.envVars.map((name) => String(env[name] ?? '').trim());
-    const set = values.every((value) => value.length > 0);
+    const altSet = (entry.anyOfEnvVars || []).some((name) => String(env[name] ?? '').trim());
+    const set = values.every((value) => value.length > 0) || altSet;
     return {
       id: entry.id,
       title: entry.title,

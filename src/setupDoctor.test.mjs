@@ -150,6 +150,8 @@ test('doctor describes the credential ladder without exposing values', () => {
     GOOGLE_MAPS_API_KEY: { configured: false },
     CESIUM_ION_TOKEN: { configured: true, source: 'environment' },
     OPENAI_API_KEY: { configured: true, source: 'dotenv files' },
+    GEMINI_API_KEY: { configured: false },
+    GOOGLE_API_KEY: { configured: false },
     AISSTREAM_API_KEY: { configured: false },
     FIRMS_MAP_KEY: { configured: false },
     TOMTOM_API_KEY: { configured: false },
@@ -160,7 +162,7 @@ test('doctor describes the credential ladder without exposing values', () => {
   const capabilities = buildCapabilitySummary(credentials);
   assert.match(capabilities.map, /Google Photorealistic 3D Tiles through Cesium ion/);
   assert.match(capabilities.map, /Bing and world-terrain stacks/);
-  assert.equal(capabilities.voice, 'available');
+  assert.equal(capabilities.voice, 'OpenAI Realtime available');
   assert.match(capabilities.missions, /token allowance/);
   assert.equal(capabilities.flights, 'OpenSky OAuth credentials not configured');
 
@@ -193,6 +195,8 @@ test('doctor sends Keychain-backed reports to dev-fresh and describes OpenSky as
     'GOOGLE_MAPS_API_KEY',
     'CESIUM_ION_TOKEN',
     'OPENAI_API_KEY',
+    'GEMINI_API_KEY',
+    'GOOGLE_API_KEY',
     'AISSTREAM_API_KEY',
     'FIRMS_MAP_KEY',
     'TOMTOM_API_KEY',
@@ -224,6 +228,8 @@ test('doctor never calls a dependency-missing setup ready', () => {
     'GOOGLE_MAPS_API_KEY',
     'CESIUM_ION_TOKEN',
     'OPENAI_API_KEY',
+    'GEMINI_API_KEY',
+    'GOOGLE_API_KEY',
     'AISSTREAM_API_KEY',
     'FIRMS_MAP_KEY',
     'TOMTOM_API_KEY',

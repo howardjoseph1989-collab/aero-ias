@@ -1,18 +1,18 @@
 {
-  "name": "gods-eye-view",
+  "name": "aero-ias",
   "private": true,
   "version": "0.1.1",
-  "description": "A real-time intelligence console for planet Earth — photorealistic 3D globe, live aircraft/ships/satellites/earthquakes/CCTV, and hands-free voice control. Runs in a browser.",
+  "description": "AERO IAS — a real-time intelligence console for planet Earth (fork of God's Eye View). Photorealistic 3D globe, live aircraft/ships/satellites/earthquakes/CCTV, and voice control via OpenAI Realtime or Gemini. Runs in a browser / installable PWA.",
   "type": "module",
   "license": "MIT",
   "author": "Bilawal Sidhu",
-  "homepage": "https://github.com/bilawalsidhu/gods-eye-view#readme",
+  "homepage": "https://github.com/howardjoseph1989-collab/aero-ias#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bilawalsidhu/gods-eye-view.git"
+    "url": "https://github.com/howardjoseph1989-collab/aero-ias.git"
   },
   "bugs": {
-    "url": "https://github.com/bilawalsidhu/gods-eye-view/issues"
+    "url": "https://github.com/howardjoseph1989-collab/aero-ias/issues"
   },
   "engines": {
     "node": ">=24.14.0 <25 || >=26 <27"

@@ -1,12 +1,14 @@
 <div align="center">
 
-# 🌐 God's Eye View
+# 🌐 AERO IAS
 
 ### A spy-satellite simulator in your browser — then you realize the sources are public and the data is real.
 
-Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic, and public cameras. Hands-free voice control powered by a realtime AI agent.
+Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic, and public cameras. Voice control via **OpenAI Realtime** or a **Gemini** turn-based path. Runs as mobile web / an installable PWA.
 
 *No place left behind.*
+
+> **AERO IAS** is a fork of [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view) by Bilawal Sidhu / Halfpixel. Upstream remains the canonical project; this fork adds Gemini voice, mobile-web / PWA basics, and AERO IAS branding.
 
 ![Orbital HUD, a tracked live globe, FLIR terrain — then OPEN SOURCED](docs/media/hero-open-source-reveal.gif)
 
@@ -32,7 +34,7 @@ Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic,
 
 <div align="center">
 
-**[Quick Start](#-quick-start) · [First Five Minutes](#-the-first-five-minutes) · [Talk to It](#-talk-to-it) · [What's Live](#-whats-on-the-globe) · [Under the Hood](#-under-the-hood) · [Keys & Costs](#-api-keys)**
+**[Quick Start](#-quick-start) · [First Five Minutes](#-the-first-five-minutes) · [Talk to It](#-talk-to-it) · [Mobile / PWA](#-mobile--pwa) · [What's Live](#-whats-on-the-globe) · [Under the Hood](#-under-the-hood) · [Keys & Costs](#-api-keys)**
 
 </div>
 
@@ -40,7 +42,7 @@ Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic,
 
 ## 🌍 Why This Exists
 
-God's Eye View brings public signals into one explorable globe. Track the world live. Talk to it. Break it. Extend it.
+AERO IAS brings public signals into one explorable globe. Track the world live. Talk to it. Break it. Extend it.
 
 Flight transponders, ship beacons, orbital elements, seismographs, and public cameras already tell us a lot about the world. God's Eye View puts them in the same place, so you can move between a global picture and an individual aircraft, ship, or street. It runs locally in your browser, with source code you can inspect and extend.
 
@@ -111,8 +113,8 @@ Use **Node.js 24.x (24.14.0 or later) or 26.x**. The setup doctor warns about
 Node 25, which is end-of-life.
 
 ```bash
-git clone https://github.com/bilawalsidhu/gods-eye-view.git
-cd gods-eye-view
+git clone https://github.com/howardjoseph1989-collab/aero-ias.git
+cd aero-ias
 npm ci
 npm run doctor
 npm run dev
@@ -151,8 +153,9 @@ reopens the same panel.
 - **What to get first:** the free [Cesium ion](https://cesium.com/ion) token
   (eligible personal, non-commercial use; current terms and quotas apply) for
   photorealistic 3D and world terrain; a Google Maps key only for the
-  billing-enabled, metered route + place search; OpenAI when you want to talk
-  to the world. Full map, costs included, in [Keys & Costs](#-api-keys).
+  billing-enabled, metered route + place search; a **Gemini** AI Studio key
+  for the free-tier voice path, or OpenAI for the original Realtime mic.
+  Full map, costs included, in [Keys & Costs](#-api-keys).
 
 <details>
 <summary>Older Pinokio versions and credential storage</summary>
@@ -198,7 +201,7 @@ Choose a first-run mission, or try these in order. The GIFs show Google Photorea
 
 ![Cycling a dense live globe through CRT, FLIR, and NVG in one continuous view](docs/media/01-style-sweep.gif)
 
-7. **Talk to it** *(needs an OpenAI key)*: *"Take me to LAX and select the nearest airborne aircraft."*
+7. **Talk to it** *(needs an OpenAI or Gemini key)*: *"Take me to LAX and select the nearest airborne aircraft."*
 8. **Come home.** Hit **Reset Globe** — or just say *"zoom out to a globe view."*
 
 **Keyboard:** `1`–`7` visual styles · `H` HUD · `D` detection · `C` cockpit · `Esc` out.
@@ -223,15 +226,23 @@ The cockpit even carries its own briefing strip: nearby live signals, regional h
 
 ## 🎙️ Talk to It
 
-> Voice needs an **OpenAI key**. Without one the entire app still runs — the mic button just reports voice is unavailable. The same key drives the **AI HUD summary**: a terse, five-word intelligence-style readout of the current view that regenerates as you move.
+> Voice needs an **OpenAI** key (original Realtime path) **or** a **Gemini** AI Studio key (turn-based free path). Without either, the entire app still runs — the mic button reports voice is unavailable. An OpenAI key also drives the **AI HUD summary**: a terse, five-word intelligence-style readout of the current view that regenerates as you move.
 
-Click **GEV MIC**, grant the microphone, and just talk. This is more than a voice-controlled remote:
+Click **GEV MIC**, grant the microphone, and just talk. Use the **OPENAI | GEMINI** toggle on the mic chrome to pick a provider. This is more than a voice-controlled remote:
+
+**Provider honesty**
+
+| Provider | What AERO IAS actually does |
+|----------|-----------------------------|
+| **OpenAI** | Original path. Browser gets a short-lived Realtime session token; WebRTC stays always-on. Your `OPENAI_API_KEY` never touches the browser. |
+| **Gemini** | Preferred free path. Server-brokered `GEMINI_API_KEY` / `GOOGLE_API_KEY` (not the Maps key). Mic audio is posted to `/api/gemini/turn`, Gemini `generateContent` may call the **same 28 gevActions tools**, then a spoken reply (Gemini TTS when available, otherwise the browser SpeechSynthesis API). This is **not** OpenAI Realtime parity — turns are send-on-pause / hold-Space, not a continuous WebRTC conversation. Gemini Live WebSocket exists upstream but does not mint a browser-safe WebRTC ephemeral token the way OpenAI does, so AERO IAS does not pretend it does. |
+| **Grok** | **Not implemented.** xAI has no documented realtime voice API with tool calling that this app can broker the way OpenAI Realtime or Gemini generateContent can. There is no fake Grok toggle. |
 
 - **🧠 It knows what it's looking at.** The agent pulls live scene context before answering — including coordinates, street names, active layers, and view scale. Ask *"what city is this?"* mid-flight and it knows.
 - **🎯 Entity Q&A.** Click any plane, ship, or datacenter and ask *"what's this?"* It answers using the object's live telemetry.
 - **👁️ Visual grounding.** At street level, it reads a viewport screenshot to identify legible signage and building names, and is instructed never to hallucinate labels.
 - **🎬 Cinematic framing.** *"Show me the planes overhead"* pulls the camera back, angles it, and frames the live traffic like a director.
-- **🔒 Honest and secure.** The agent only confirms actions that succeeded. Your `OPENAI_API_KEY` never touches the browser; the client only gets a short-lived session token.
+- **🔒 Honest and secure.** The agent only confirms actions that succeeded. Provider keys stay on the server. OpenAI clients receive a short-lived session token; Gemini clients only post recorded turns / tool results to the same-origin broker.
 
 Twenty-eight tools, four jobs — the commands below come straight from the product's voice test suite and tool playbook:
 
@@ -257,6 +268,30 @@ Twenty-eight tools, four jobs — the commands below come straight from the prod
 ![The globe populating with the world's radio stations as another live layer](docs/media/15-global-radio-layer.gif)
 
 *Ask for radio near anywhere and the globe starts broadcasting — every station is a real place you can fly to.*
+
+---
+
+## 📱 Mobile / PWA
+
+AERO IAS is a **Vite + Cesium browser client**. This fork is not a Play Store / App Store native app. On a phone or tablet you run the **mobile web** build (or Add to Home Screen).
+
+This is a first-pass mobile layout: larger MIC / HUD tap targets, safer viewport / notch insets, and less chrome collision. **It is not a claim of zero mobile bugs** — Cesium, live layers, and cockpit chrome are still desktop-first.
+
+### Run it on your phone
+
+1. Start the app on a machine you trust (`npm run dev`). Default bind is **localhost only**.
+2. To open it from a phone on the same LAN, opt in explicitly: `npm run dev -- --host 0.0.0.0 --port 4173`. Anyone who can reach that host can spend your brokered keys — see [SECURITY.md](SECURITY.md) and the LAN warning in [Keys & Costs](#-api-keys).
+3. In the phone browser (Safari or Chrome), open `http://<your-lan-ip>:4173`.
+4. Grant **microphone** when you tap **GEV MIC**. iOS Safari requires a user gesture and will not keep a mic session in a background tab.
+5. Prefer **HTTPS** (or localhost) for `getUserMedia`. A plain `http://` LAN origin may refuse the mic on some browsers.
+
+### Add to Home Screen
+
+1. Open the running app in Safari (iOS) or Chrome (Android).
+2. **iOS:** Share → Add to Home Screen. **Android:** Chrome menu → Add to Home Screen / Install app.
+3. The web app manifest (`/manifest.webmanifest`) and icons (`/icons/icon-192.png`, `/icons/icon-512.png`) are what those menus read. A tiny service worker (`/sw.js`) exists only so the install prompt can appear; it does **not** cache the globe or live APIs.
+
+Voice on mobile: **Gemini** (tap MIC or hold to speak, pause/release to send a turn) is usually the easier path. **OpenAI Realtime** still needs a stable WebRTC session and an OpenAI key.
 
 ---
 
@@ -318,7 +353,7 @@ Once the basics click, run these:
 | **🪦 Walk the boneyard** | Fly from regional context down into dense, fully resolved rows of retired aircraft. |
 | **🏗️ Orbit Three Gorges** | Sweep the dam and its terrain at a glance — then flip on the **Dams** layer and find 703 more. |
 
-*🎙️ = voice missions — they need an OpenAI key.*
+*🎙️ = voice missions — they need an OpenAI or Gemini key.*
 
 ![Resolving a selected aircraft's recent flight path into stacked 3D loops above the terrain](docs/media/07-helicopter-loops.gif)
 
@@ -343,8 +378,8 @@ How the globe handles live data:
 - **Honest satellites.** SGP4 propagation with orbit rings that stay locked to their satellites via GMST realignment — no drift, no per-second flicker.
 - **Sits on the real ground.** Entity heights run through a real vertical datum — geoid-aware, sampled against the *rendered* terrain mesh — so aircraft park on aprons and cameras stand on street corners instead of floating.
 - **Caching and request budgets.** An OpenSky credit governor, a TomTom daily tile budget, and disk-cached TLEs reduce repeated requests. These controls do not replace provider quotas or billing controls.
-- **Server-side credentials.** Every API that touches a private key (OpenAI, AISStream, OpenSky OAuth, camera frames) is brokered through a hardened server-side proxy with SSRF protection, response caps, and sanitized errors. The only keys the browser sees are Google Maps and Cesium ion (restrict both at the provider).
-- **No framework.** Vanilla JavaScript, **CesiumJS**, and **Vite** — plus **Google Photorealistic 3D Tiles** for the planet and the **OpenAI Realtime API** for voice. Fast to read, fast to hack on.
+- **Server-side credentials.** Every API that touches a private key (OpenAI, Gemini, AISStream, OpenSky OAuth, camera frames) is brokered through a hardened server-side proxy with SSRF protection, response caps, and sanitized errors. The only keys the browser sees are Google Maps and Cesium ion (restrict both at the provider).
+- **No framework.** Vanilla JavaScript, **CesiumJS**, and **Vite** — plus **Google Photorealistic 3D Tiles** for the planet, **OpenAI Realtime** for the original voice path, and **Gemini generateContent** for the turn-based free path. Fast to read, fast to hack on.
 
 ```
 src/
@@ -353,7 +388,7 @@ src/
 ├── hud.js                  # Intelligence HUD + AI scene summary
 ├── keySetup.js             # POWER UP panel — in-app provider keys (dev server only)
 ├── mapStackController.js   # Basemap switching — Google 3D / Esri / OSM / ion stacks
-├── voice/                  # OpenAI Realtime session + 28 voice tools
+├── voice/                  # OpenAI Realtime + Gemini turn session + 28 voice tools
 ├── data/                   # One module per layer + orchestration + context store
 │   ├── iconOrientation.js  # Screen-projected headings + horizon cull
 │   └── local_data/         # Bundled datasets (per-folder provenance)
@@ -375,13 +410,14 @@ and configuration details.
 
 ### Choose the capabilities you want
 
-Six keys. Four have a free tier, and the two 🔴 ones are metered:
+Seven keys. Five have a free tier, and the two 🔴 ones are metered:
 
 | | Key | Why | Get it |
 |---|-----|-----|--------|
 | 🟡 | **Cesium ion** | 🗺️ Google Photorealistic 3D, world terrain, and additional ion-hosted imagery stacks. The free Community plan is for eligible individual, personal/non-commercial use and has quotas | [cesium.com/ion](https://cesium.com/ion) — use a public `assets:read` token and check current [pricing/eligibility](https://cesium.com/platform/cesium-ion/pricing/) |
 | 🔴 | **Google Maps** | Direct Google Photorealistic 3D + Google place search ([Map Tiles API](https://developers.google.com/maps/documentation/tile)) | [Google Cloud Console](https://console.cloud.google.com/) — URL-restrict it |
-| 🔴 | **OpenAI** | 🎙️ The voice experience + AI HUD summary. The mini model works; the standard model is noticeably smarter. Want Gemini or another provider behind the mic? PRs welcome | [platform.openai.com](https://platform.openai.com) — metered, see costs below |
+| 🟡 | **Gemini** | 🎙️ Turn-based voice — mic audio → same 28 tools → spoken reply. Preferred free path. Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY` as an alias). **Not** the Maps key | [Google AI Studio](https://aistudio.google.com/apikey) — free tier with quotas |
+| 🔴 | **OpenAI** | 🎙️ Original always-on Realtime voice + AI HUD summary. The mini model works; the standard model is noticeably smarter | [platform.openai.com](https://platform.openai.com) — metered, see costs below |
 | 🟡 | **AISStream** | 🚢 Live global ships | [aisstream.io](https://aisstream.io) — free signup |
 | 🟡 | **NASA FIRMS** | 🔥 Live active fires | [firms.modaps.eosdis.nasa.gov](https://firms.modaps.eosdis.nasa.gov/api/map_key/) — free |
 | 🟡 | **TomTom** | 🚦 Live flow speeds and congestion colors for the simulated traffic layer | [developer.tomtom.com](https://developer.tomtom.com) — free tier available |
@@ -419,6 +455,7 @@ OPENAI_API_KEY="…" AISSTREAM_API_KEY="…" npm run dev -- --host localhost --p
 # On macOS, store any of them in the Keychain and dev-fresh.sh pulls them in:
 security add-generic-password -U -s "google-maps-api" -a "api-key" -w
 security add-generic-password -U -s "openai-api"      -a "api-key" -w
+security add-generic-password -U -s "gemini-api"      -a "api-key" -w
 security add-generic-password -U -s "aisstream-api"   -a "api-key" -w
 security add-generic-password -U -s "firms-map"       -a "map-key" -w
 security add-generic-password -U -s "cesium-ion"      -a "token"   -w
@@ -437,6 +474,7 @@ Honest numbers, roughly, as of mid-2026 — always check the provider pricing pa
 | **🟢 Most layers** | **$0, no signup.** OpenSky anon, USGS, CelesTrak, adsb.lol, city CCTV, Radio Browser, GBFS, Launch Library 2, bundled datasets. |
 | **🟡 The free-key tier** | **$0 with a signup.** AISStream, FIRMS, TomTom, OpenSky, plus Cesium ion for eligible personal/non-commercial use. Provider quotas and eligibility still apply. |
 | **🗺️ Google 3D tiles** | **Free through an eligible Cesium ion Community account within its quota; metered through a direct Google key.** Use the direct route for GEV place search or commercial deployment, verify current provider terms, and set budget alerts where billing is enabled. |
+| **🟡 Gemini voice** | **The free-tier path.** Google AI Studio keys have a free quota. AERO IAS uses turn-based `generateContent` (audio in, tools, then TTS or browser speech). It is not billed like OpenAI Realtime; the mic chrome shows `TURN` instead of a session dollar meter. Provider quotas still apply — set `GEV_RATELIMIT_GEMINI_PER_MIN` if you share the server. |
 | **🔴 OpenAI voice** | **The one that costs real money — so the app meters it for you.** Realtime audio runs a few cents per active minute; an evening of heavy use is single-digit dollars. A live session-spend readout sits next to the mic, with an STD/MINI model toggle, a $2 warning, and a **$5 hard cap that ends the session**. The voice context window is kept deliberately short too. |
 
 Google's direct 3D route is surprisingly generous: the first 1,000 Photorealistic
@@ -453,7 +491,7 @@ Everything above is the deliberately cheap baseline — enough to get a real tas
 
 ### 🔒 Sharing an instance
 
-By default nobody else can reach your server — it binds to localhost. To share on your LAN, opt in explicitly (`npm run dev -- --host 0.0.0.0 --port 4173`, or `HOST=0.0.0.0 ./scripts/dev-fresh.sh` on macOS/Linux) — but know that ⚠️ **a LAN-visible server brokers your configured API keys to anyone who can reach it.** Set the per-IP throttles (`GEV_RATELIMIT_OPENAI_PER_MIN`, `GEV_RATELIMIT_GOOGLE_PER_MIN` — see `.env.example`) and, before anything else, **configure provider quotas, usage limits, and billing alerts**: app-level throttles are not billing caps, and a budget alert alone does not stop spending. Full threat model in [SECURITY.md](SECURITY.md).
+By default nobody else can reach your server — it binds to localhost. To share on your LAN, opt in explicitly (`npm run dev -- --host 0.0.0.0 --port 4173`, or `HOST=0.0.0.0 ./scripts/dev-fresh.sh` on macOS/Linux) — but know that ⚠️ **a LAN-visible server brokers your configured API keys to anyone who can reach it.** Set the per-IP throttles (`GEV_RATELIMIT_OPENAI_PER_MIN`, `GEV_RATELIMIT_GEMINI_PER_MIN`, `GEV_RATELIMIT_GOOGLE_PER_MIN` — see `.env.example`) and, before anything else, **configure provider quotas, usage limits, and billing alerts**: app-level throttles are not billing caps, and a budget alert alone does not stop spending. Full threat model in [SECURITY.md](SECURITY.md).
 
 Provider Settings is disabled when the server is shared, so remote users cannot
 access the key-entry panel.
@@ -466,7 +504,7 @@ a separately reviewed authentication proxy if remote access is required.
 
 ## 📋 Responsible & Open
 
-God's Eye View runs on **public data, clear sources, and local-first execution.** No secrets, no private datasets, no mystery scraping — anything involving a private key is brokered server-side. It has the visual grammar of a classified ops room, built entirely from open signals and inspectable code.
+AERO IAS runs on **public data, clear sources, and local-first execution.** No secrets, no private datasets, no mystery scraping — anything involving a private key is brokered server-side. It has the visual grammar of a classified ops room, built entirely from open signals and inspectable code.
 
 **The line.** This project models **events, assets, infrastructure, and systems** — aircraft, vessels, satellites, fires, cameras, cities. It does not build features for named-person search, face recognition, or tracking individuals, and pull requests that cross that line won't be merged. People are not a query type here.
 
@@ -505,6 +543,6 @@ One heads-up from the inside: build in this space for a week and you learn that 
 
 ▶️ [Watch the God's Eye View series](https://youtube.com/playlist?list=PL6qSg2I-7_koPbDnSMo0QeeHX_RknA2uv&si=nBGYMoHWQw41v93Q) · 📬 [Map the World](https://maptheworld.ai/) — the newsletter behind the project
 
-**🌐 God's Eye View. No place left behind.**
+**🌐 AERO IAS. No place left behind.** Fork of [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view).
 
 </div>

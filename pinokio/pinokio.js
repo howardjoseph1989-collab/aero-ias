@@ -1,7 +1,7 @@
 module.exports = {
   version: '3.6',
-  title: "God's Eye View",
-  description: 'A live 3D intelligence console for planet Earth.',
+  title: 'AERO IAS',
+  description: 'A live 3D intelligence console for planet Earth (AERO IAS, fork of God\'s Eye View).',
   menu: async (kernel, info) => {
     const installed = await kernel.exists(__dirname, '.installed');
     const installing = info.running('install.js');
@@ -23,7 +23,7 @@ module.exports = {
       const local = info.local('start.js');
       if (local?.url) {
         return [
-          { default: true, icon: 'fa-solid fa-earth-americas', text: 'Open God\'s Eye View', href: local.url },
+          { default: true, icon: 'fa-solid fa-earth-americas', text: 'Open AERO IAS', href: local.url },
           { icon: 'fa-solid fa-terminal', text: 'Server', href: 'start.js' },
         ];
       }

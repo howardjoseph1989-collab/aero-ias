@@ -14,6 +14,8 @@ const PROVIDER_FIELDS = [
   'GOOGLE_MAPS_API_KEY',
   'CESIUM_ION_TOKEN',
   'OPENAI_API_KEY',
+  'GEMINI_API_KEY',
+  'GOOGLE_API_KEY',
   'AISSTREAM_API_KEY',
   'FIRMS_MAP_KEY',
   'TOMTOM_API_KEY',
@@ -23,6 +25,7 @@ const PROVIDER_FIELDS = [
 ];
 const RATE_LIMIT_FIELDS = [
   'GEV_RATELIMIT_OPENAI_PER_MIN',
+  'GEV_RATELIMIT_GEMINI_PER_MIN',
   'GEV_RATELIMIT_GOOGLE_PER_MIN',
 ];
 const APP_VALUE_FIELDS = [...PROVIDER_FIELDS, ...RATE_LIMIT_FIELDS];
@@ -140,7 +143,7 @@ test('Pinokio menu resolves the nested install marker and exposes each lifecycle
     running: 'start.js',
     url: 'http://127.0.0.1:4173/',
   }), [
-    { text: "Open God's Eye View", href: 'http://127.0.0.1:4173/', default: true },
+    { text: 'Open AERO IAS', href: 'http://127.0.0.1:4173/', default: true },
     { text: 'Server', href: 'start.js', default: false },
   ]);
   assert.ok(existsCalls.length >= 7);
