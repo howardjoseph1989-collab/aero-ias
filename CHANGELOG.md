@@ -7,9 +7,9 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ### Changed
 
-- Product display name is now **AERO IAS**. User-facing titles, UI chrome,
-  Pinokio metadata, and package description no longer use God's Eye View or
-  WorldView as the product name. See [NOTICE](NOTICE) for upstream attribution.
+- Product display name is now **AERO IAS** (all caps, space, no hyphen).
+  User-facing titles, UI chrome, Pinokio metadata, and package description
+  use that exact string. See [NOTICE](NOTICE) for upstream attribution.
 
 ### Fixed
 
