@@ -1,7 +1,7 @@
 import { createGevActionRunner, readLayerLifecycleSummary } from './gevActions.js';
 import { GevGeminiController } from './gevGemini.js';
 import {
-  GROK_VOICE_STATUS,
+  DEFAULT_VOICE_PROVIDER,
   normalizeVoiceProvider,
   readStoredVoiceProvider,
   resolveVoiceProvider,
@@ -342,11 +342,11 @@ export class GevVoiceHub {
       button.disabled = false;
       button.title = id === 'gemini'
         ? (available
-          ? 'Gemini turn-based voice — free-tier AI Studio key'
-          : 'Needs GEMINI_API_KEY or GOOGLE_API_KEY')
+          ? 'Recommended — Gemini voice + the same 28 globe tools'
+          : 'Recommended path — needs GEMINI_API_KEY or GOOGLE_API_KEY')
         : (available
-          ? 'OpenAI Realtime — original always-on path'
-          : 'Needs OPENAI_API_KEY');
+          ? 'Optional original OpenAI Realtime path'
+          : 'Optional original path — needs OPENAI_API_KEY');
     });
     if (this.ui?.helpDetail) {
       this.ui.helpDetail.textContent = voiceProviderHint(this.provider, this.availability);
@@ -372,7 +372,6 @@ export class GevVoiceHub {
       this.availability = {
         openai: Boolean(data.openai),
         gemini: Boolean(data.gemini),
-        grok: data.grok || GROK_VOICE_STATUS,
       };
       this.provider = resolveVoiceProvider({
         stored: this.provider || readStoredVoiceProvider(),
@@ -381,7 +380,7 @@ export class GevVoiceHub {
       });
       writeStoredVoiceProvider(this.provider);
     } catch {
-      this.availability = { openai: false, gemini: false, grok: GROK_VOICE_STATUS };
+      this.availability = { openai: false, gemini: false };
     }
     this.syncProviderUi();
     return this.availability;
@@ -2762,13 +2761,14 @@ function createVoiceControl({ reset = false } = {}) {
     root.id = 'gev-voice-control';
     root.dataset.status = 'idle';
     root.dataset.speaker = 'idle';
+    root.dataset.provider = DEFAULT_VOICE_PROVIDER;
     root.innerHTML = `
       <div class="gev-voice-heading">
         <div class="gev-voice-kicker">AI AGENT</div>
         <div id="gev-voice-status">OFF</div>
         <div class="gev-voice-providers" role="group" aria-label="Voice provider">
-          <button type="button" class="gev-voice-provider-btn active" data-voice-provider="openai" aria-pressed="true" title="OpenAI Realtime">OPENAI</button>
-          <button type="button" class="gev-voice-provider-btn" data-voice-provider="gemini" aria-pressed="false" title="Gemini turn-based voice">GEMINI</button>
+          <button type="button" class="gev-voice-provider-btn active" data-voice-provider="gemini" aria-pressed="true" title="Recommended — Gemini voice + tools">GEMINI</button>
+          <button type="button" class="gev-voice-provider-btn" data-voice-provider="openai" aria-pressed="false" title="Optional original OpenAI Realtime path">OPENAI</button>
         </div>
         <div class="gev-voice-cost">
           <button id="gev-voice-tier" class="gev-voice-tier-btn" type="button" aria-pressed="false" title="Voice model tier — applies next session">STD</button>

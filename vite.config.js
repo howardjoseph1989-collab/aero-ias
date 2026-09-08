@@ -82,7 +82,7 @@ import {
   resolveGeminiApiKey,
   runGeminiTurn,
 } from './src/voice/geminiBroker.mjs';
-import { GROK_VOICE_STATUS } from './src/voice/voiceProviders.js';
+import { DEFAULT_VOICE_PROVIDER } from './src/voice/voiceProviders.js';
 
 /** Resolve __dirname for ESM context. */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -5371,7 +5371,7 @@ export function geminiVoiceProxy() {
         gemini: gemini.available,
         geminiMode: gemini.mode,
         geminiModel: gemini.model,
-        grok: GROK_VOICE_STATUS,
+        recommended: DEFAULT_VOICE_PROVIDER,
       });
     });
 

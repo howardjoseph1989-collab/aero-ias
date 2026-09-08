@@ -4,7 +4,7 @@
 
 ### A spy-satellite simulator in your browser — then you realize the sources are public and the data is real.
 
-Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic, and public cameras. Voice control via **OpenAI Realtime** or a **Gemini** turn-based path. Runs as mobile web / an installable PWA.
+Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic, and public cameras. Voice control via **Gemini** (recommended) or optional **OpenAI Realtime**. Runs as mobile web / an installable PWA.
 
 *No place left behind.*
 
@@ -154,7 +154,8 @@ reopens the same panel.
   (eligible personal, non-commercial use; current terms and quotas apply) for
   photorealistic 3D and world terrain; a Google Maps key only for the
   billing-enabled, metered route + place search; a **Gemini** AI Studio key
-  for the free-tier voice path, or OpenAI for the original Realtime mic.
+  for the recommended voice+tools path. OpenAI is optional if you want the
+  original Realtime mic.
   Full map, costs included, in [Keys & Costs](#-api-keys).
 
 <details>
@@ -201,7 +202,7 @@ Choose a first-run mission, or try these in order. The GIFs show Google Photorea
 
 ![Cycling a dense live globe through CRT, FLIR, and NVG in one continuous view](docs/media/01-style-sweep.gif)
 
-7. **Talk to it** *(needs an OpenAI or Gemini key)*: *"Take me to LAX and select the nearest airborne aircraft."*
+7. **Talk to it** *(Gemini recommended; OpenAI optional)*: *"Take me to LAX and select the nearest airborne aircraft."*
 8. **Come home.** Hit **Reset Globe** — or just say *"zoom out to a globe view."*
 
 **Keyboard:** `1`–`7` visual styles · `H` HUD · `D` detection · `C` cockpit · `Esc` out.
@@ -226,17 +227,16 @@ The cockpit even carries its own briefing strip: nearby live signals, regional h
 
 ## 🎙️ Talk to It
 
-> Voice needs an **OpenAI** key (original Realtime path) **or** a **Gemini** AI Studio key (turn-based free path). Without either, the entire app still runs — the mic button reports voice is unavailable. An OpenAI key also drives the **AI HUD summary**: a terse, five-word intelligence-style readout of the current view that regenerates as you move.
+> Voice defaults to **Gemini** (recommended). Paste a Google AI Studio key and talking drives the globe through the same 28 tools as the original. **OpenAI Realtime** remains an optional original path. Without either key the app still runs — the mic names the missing recommended Gemini key. An OpenAI key also drives the **AI HUD summary**.
 
-Click **GEV MIC**, grant the microphone, and just talk. Use the **OPENAI | GEMINI** toggle on the mic chrome to pick a provider. This is more than a voice-controlled remote:
+Click **GEV MIC**, grant the microphone, and just talk. The mic chrome defaults to **GEMINI**; switch to **OPENAI** only if you want the original Realtime session. This is more than a voice-controlled remote:
 
 **Provider honesty**
 
 | Provider | What AERO IAS actually does |
 |----------|-----------------------------|
-| **OpenAI** | Original path. Browser gets a short-lived Realtime session token; WebRTC stays always-on. Your `OPENAI_API_KEY` never touches the browser. |
-| **Gemini** | Preferred free path. Server-brokered `GEMINI_API_KEY` / `GOOGLE_API_KEY` (not the Maps key). Mic audio is posted to `/api/gemini/turn`, Gemini `generateContent` may call the **same 28 gevActions tools**, then a spoken reply (Gemini TTS when available, otherwise the browser SpeechSynthesis API). This is **not** OpenAI Realtime parity — turns are send-on-pause / hold-Space, not a continuous WebRTC conversation. Gemini Live WebSocket exists upstream but does not mint a browser-safe WebRTC ephemeral token the way OpenAI does, so AERO IAS does not pretend it does. |
-| **Grok** | **Not implemented.** xAI has no documented realtime voice API with tool calling that this app can broker the way OpenAI Realtime or Gemini generateContent can. There is no fake Grok toggle. |
+| **Gemini (default)** | Recommended brain/voice path. Server-brokered `GEMINI_API_KEY` / `GOOGLE_API_KEY` (not the Maps key). Mic audio is posted to `/api/gemini/turn`, Gemini `generateContent` may call the **same 28 gevActions tools**, then a spoken reply (Gemini TTS when available, otherwise the browser SpeechSynthesis API). Turns are send-on-pause / hold-Space. Gemini Live WebSocket exists upstream but does not mint a browser-safe WebRTC ephemeral token the way OpenAI does, so AERO IAS uses this smallest working tool-calling path instead. |
+| **OpenAI (optional)** | Original path. Browser gets a short-lived Realtime session token; WebRTC stays always-on. Your `OPENAI_API_KEY` never touches the browser. |
 
 - **🧠 It knows what it's looking at.** The agent pulls live scene context before answering — including coordinates, street names, active layers, and view scale. Ask *"what city is this?"* mid-flight and it knows.
 - **🎯 Entity Q&A.** Click any plane, ship, or datacenter and ask *"what's this?"* It answers using the object's live telemetry.
@@ -291,7 +291,7 @@ This is a first-pass mobile layout: larger MIC / HUD tap targets, safer viewport
 2. **iOS:** Share → Add to Home Screen. **Android:** Chrome menu → Add to Home Screen / Install app.
 3. The web app manifest (`/manifest.webmanifest`) and icons (`/icons/icon-192.png`, `/icons/icon-512.png`) are what those menus read. A tiny service worker (`/sw.js`) exists only so the install prompt can appear; it does **not** cache the globe or live APIs.
 
-Voice on mobile: **Gemini** (tap MIC or hold to speak, pause/release to send a turn) is usually the easier path. **OpenAI Realtime** still needs a stable WebRTC session and an OpenAI key.
+Voice on mobile defaults to **Gemini** (tap MIC or hold to speak, pause/release to send a turn that can call the same globe tools). **OpenAI Realtime** is optional and still needs a stable WebRTC session plus an OpenAI key.
 
 ---
 
@@ -353,7 +353,7 @@ Once the basics click, run these:
 | **🪦 Walk the boneyard** | Fly from regional context down into dense, fully resolved rows of retired aircraft. |
 | **🏗️ Orbit Three Gorges** | Sweep the dam and its terrain at a glance — then flip on the **Dams** layer and find 703 more. |
 
-*🎙️ = voice missions — they need an OpenAI or Gemini key.*
+*🎙️ = voice missions — Gemini recommended; OpenAI optional.*
 
 ![Resolving a selected aircraft's recent flight path into stacked 3D loops above the terrain](docs/media/07-helicopter-loops.gif)
 
@@ -416,8 +416,8 @@ Seven keys. Five have a free tier, and the two 🔴 ones are metered:
 |---|-----|-----|--------|
 | 🟡 | **Cesium ion** | 🗺️ Google Photorealistic 3D, world terrain, and additional ion-hosted imagery stacks. The free Community plan is for eligible individual, personal/non-commercial use and has quotas | [cesium.com/ion](https://cesium.com/ion) — use a public `assets:read` token and check current [pricing/eligibility](https://cesium.com/platform/cesium-ion/pricing/) |
 | 🔴 | **Google Maps** | Direct Google Photorealistic 3D + Google place search ([Map Tiles API](https://developers.google.com/maps/documentation/tile)) | [Google Cloud Console](https://console.cloud.google.com/) — URL-restrict it |
-| 🟡 | **Gemini** | 🎙️ Turn-based voice — mic audio → same 28 tools → spoken reply. Preferred free path. Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY` as an alias). **Not** the Maps key | [Google AI Studio](https://aistudio.google.com/apikey) — free tier with quotas |
-| 🔴 | **OpenAI** | 🎙️ Original always-on Realtime voice + AI HUD summary. The mini model works; the standard model is noticeably smarter | [platform.openai.com](https://platform.openai.com) — metered, see costs below |
+| 🟡 | **Gemini** | 🎙️ **Recommended voice+tools.** Mic audio → same 28 tools → spoken reply. Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY` as an alias). **Not** the Maps key | [Google AI Studio](https://aistudio.google.com/apikey) — free tier with quotas |
+| 🔴 | **OpenAI** | 🎙️ Optional original Realtime voice + AI HUD summary. The mini model works; the standard model is noticeably smarter | [platform.openai.com](https://platform.openai.com) — metered, see costs below |
 | 🟡 | **AISStream** | 🚢 Live global ships | [aisstream.io](https://aisstream.io) — free signup |
 | 🟡 | **NASA FIRMS** | 🔥 Live active fires | [firms.modaps.eosdis.nasa.gov](https://firms.modaps.eosdis.nasa.gov/api/map_key/) — free |
 | 🟡 | **TomTom** | 🚦 Live flow speeds and congestion colors for the simulated traffic layer | [developer.tomtom.com](https://developer.tomtom.com) — free tier available |

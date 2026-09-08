@@ -1,36 +1,31 @@
 /**
  * Voice provider registry for AERO IAS.
  *
- * OpenAI Realtime stays the original always-on WebRTC path. Gemini is the
- * practical free-tier alternative: a server-brokered turn (mic audio →
- * generateContent + the same 28 gevActions tools → spoken reply). xAI Grok
- * has no documented browser-safe realtime voice API with tool calling, so it
- * is listed only as unavailable — never offered as a working toggle.
+ * Gemini is the default recommended brain/voice path: a server-brokered turn
+ * (mic audio → generateContent + the same 28 gevActions tools → spoken reply)
+ * so talking can drive the globe. OpenAI Realtime remains the optional
+ * original always-on WebRTC path. Grok/xAI is out of scope — do not add it.
  */
 
 export const VOICE_PROVIDERS = Object.freeze({
-  openai: Object.freeze({
-    id: 'openai',
-    label: 'OPENAI',
-    mode: 'realtime',
-    description: 'OpenAI Realtime over WebRTC — original always-on mic path',
-  }),
   gemini: Object.freeze({
     id: 'gemini',
     label: 'GEMINI',
     mode: 'turn',
-    description: 'Gemini generateContent turn — mic audio, same tools, then TTS',
+    recommended: true,
+    description: 'Recommended — Gemini generateContent turn, same 28 tools, then TTS',
+  }),
+  openai: Object.freeze({
+    id: 'openai',
+    label: 'OPENAI',
+    mode: 'realtime',
+    recommended: false,
+    description: 'Optional original path — OpenAI Realtime over WebRTC',
   }),
 });
 
-export const GROK_VOICE_STATUS = Object.freeze({
-  id: 'grok',
-  label: 'GROK',
-  available: false,
-  reason: 'xAI Grok has no documented realtime voice API with tool calling that AERO IAS can broker the way OpenAI Realtime or Gemini generateContent can. Not offered as a fake provider.',
-});
-
-export const DEFAULT_VOICE_PROVIDER = 'openai';
+export const DEFAULT_VOICE_PROVIDER = 'gemini';
+export const RECOMMENDED_VOICE_PROVIDER = 'gemini';
 export const VOICE_PROVIDER_STORAGE_KEY = 'godsEyeView.voice.provider';
 
 const KNOWN_IDS = new Set(Object.keys(VOICE_PROVIDERS));
@@ -46,9 +41,11 @@ export function normalizeVoiceProvider(id, fallback = DEFAULT_VOICE_PROVIDER) {
 
 /**
  * Pick the provider the MIC should use.
- * Stored preference wins when that provider is configured; otherwise OpenAI,
- * then Gemini, then the stored/default id so a keyless session still has a
- * toggle target (start() then surfaces the missing-key error).
+ *
+ * A stored choice wins only when that provider has a key. Otherwise Gemini
+ * is the recommended default whenever it is configured. OpenAI is the
+ * fallback when only that key exists. A keyless session stays on Gemini so
+ * start() names the recommended missing key.
  */
 export function resolveVoiceProvider({
   stored = DEFAULT_VOICE_PROVIDER,
@@ -56,10 +53,10 @@ export function resolveVoiceProvider({
   gemini = false,
 } = {}) {
   const preferred = normalizeVoiceProvider(stored);
-  if (preferred === 'openai' && openai) return 'openai';
   if (preferred === 'gemini' && gemini) return 'gemini';
-  if (openai) return 'openai';
+  if (preferred === 'openai' && openai) return 'openai';
   if (gemini) return 'gemini';
+  if (openai) return 'openai';
   return preferred;
 }
 
@@ -74,7 +71,9 @@ function voiceStorage(storage) {
 
 export function readStoredVoiceProvider(storage) {
   try {
-    return normalizeVoiceProvider(voiceStorage(storage)?.getItem(VOICE_PROVIDER_STORAGE_KEY));
+    const raw = voiceStorage(storage)?.getItem(VOICE_PROVIDER_STORAGE_KEY);
+    if (raw == null || raw === '') return DEFAULT_VOICE_PROVIDER;
+    return normalizeVoiceProvider(raw);
   } catch {
     return DEFAULT_VOICE_PROVIDER;
   }
@@ -94,10 +93,10 @@ export function voiceProviderHint(provider, { openai = false, gemini = false } =
   const id = normalizeVoiceProvider(provider);
   if (id === 'gemini') {
     return gemini
-      ? 'Hold Space or tap MIC — speak, then release to send a Gemini turn'
-      : 'Needs GEMINI_API_KEY or GOOGLE_API_KEY — add it in Provider Settings';
+      ? 'Recommended — hold Space or tap MIC, then pause to send a Gemini turn'
+      : 'Recommended path — add GEMINI_API_KEY or GOOGLE_API_KEY in Provider Settings';
   }
   return openai
-    ? 'Hold Space to speak · click mic to toggle OpenAI Realtime'
-    : 'Needs OPENAI_API_KEY — add it in Provider Settings';
+    ? 'Optional OpenAI Realtime — hold Space to speak · click mic to toggle'
+    : 'Optional original path — needs OPENAI_API_KEY in Provider Settings';
 }

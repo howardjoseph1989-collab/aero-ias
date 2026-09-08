@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   DEFAULT_VOICE_PROVIDER,
-  GROK_VOICE_STATUS,
+  RECOMMENDED_VOICE_PROVIDER,
   isKnownVoiceProvider,
   normalizeVoiceProvider,
   readStoredVoiceProvider,
@@ -12,39 +12,39 @@ import {
 } from './voiceProviders.js';
 import { GEV_VOICE_TOOL_COUNT, gevVoiceToolNames, toGeminiFunctionDeclarations } from './gevToolSchemas.mjs';
 
-test('OpenAI and Gemini are the only selectable voice providers', () => {
-  assert.equal(isKnownVoiceProvider('openai'), true);
+test('Gemini is the default recommended voice provider; Grok is not a provider', () => {
+  assert.equal(DEFAULT_VOICE_PROVIDER, 'gemini');
+  assert.equal(RECOMMENDED_VOICE_PROVIDER, 'gemini');
   assert.equal(isKnownVoiceProvider('gemini'), true);
+  assert.equal(isKnownVoiceProvider('openai'), true);
   assert.equal(isKnownVoiceProvider('grok'), false);
-  assert.equal(normalizeVoiceProvider('GEMINI'), 'gemini');
-  assert.equal(normalizeVoiceProvider('nope'), DEFAULT_VOICE_PROVIDER);
+  assert.equal(normalizeVoiceProvider('OPENAI'), 'openai');
+  assert.equal(normalizeVoiceProvider('nope'), 'gemini');
 });
 
-test('Grok is documented as unavailable rather than offered as a fake path', () => {
-  assert.equal(GROK_VOICE_STATUS.available, false);
-  assert.match(GROK_VOICE_STATUS.reason, /no documented realtime voice API/i);
-});
-
-test('provider resolution prefers a stored provider that is actually configured', () => {
+test('provider resolution recommends Gemini and only honors a stored OpenAI choice when that key exists', () => {
   assert.equal(resolveVoiceProvider({ stored: 'gemini', openai: true, gemini: true }), 'gemini');
-  assert.equal(resolveVoiceProvider({ stored: 'gemini', openai: true, gemini: false }), 'openai');
+  assert.equal(resolveVoiceProvider({ stored: 'openai', openai: true, gemini: true }), 'openai');
   assert.equal(resolveVoiceProvider({ stored: 'openai', openai: false, gemini: true }), 'gemini');
-  assert.equal(resolveVoiceProvider({ stored: 'openai', openai: false, gemini: false }), 'openai');
+  assert.equal(resolveVoiceProvider({ stored: 'gemini', openai: true, gemini: false }), 'openai');
+  assert.equal(resolveVoiceProvider({ openai: true, gemini: true }), 'gemini');
+  assert.equal(resolveVoiceProvider({ openai: false, gemini: false }), 'gemini');
 });
 
-test('voice provider preference persists through a storage stub', () => {
+test('voice provider preference persists through a storage stub and defaults to Gemini', () => {
   const storage = new Map();
   const stub = {
     getItem: (key) => (storage.has(key) ? storage.get(key) : null),
     setItem: (key, value) => { storage.set(key, value); },
   };
-  assert.equal(readStoredVoiceProvider(stub), 'openai');
-  assert.equal(writeStoredVoiceProvider('gemini', stub), 'gemini');
   assert.equal(readStoredVoiceProvider(stub), 'gemini');
+  assert.equal(writeStoredVoiceProvider('openai', stub), 'openai');
+  assert.equal(readStoredVoiceProvider(stub), 'openai');
 });
 
-test('provider hint stays honest about missing keys', () => {
+test('provider hint recommends Gemini and treats OpenAI as optional', () => {
   assert.match(voiceProviderHint('gemini', { gemini: false }), /GEMINI_API_KEY/);
+  assert.match(voiceProviderHint('gemini', { gemini: true }), /Recommended/);
   assert.match(voiceProviderHint('openai', { openai: false }), /OPENAI_API_KEY/);
 });
 

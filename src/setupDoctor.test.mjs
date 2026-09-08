@@ -162,7 +162,7 @@ test('doctor describes the credential ladder without exposing values', () => {
   const capabilities = buildCapabilitySummary(credentials);
   assert.match(capabilities.map, /Google Photorealistic 3D Tiles through Cesium ion/);
   assert.match(capabilities.map, /Bing and world-terrain stacks/);
-  assert.equal(capabilities.voice, 'OpenAI Realtime available');
+  assert.equal(capabilities.voice, 'OpenAI Realtime available (optional original path)');
   assert.match(capabilities.missions, /token allowance/);
   assert.equal(capabilities.flights, 'OpenSky OAuth credentials not configured');
 
