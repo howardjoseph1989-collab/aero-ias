@@ -9593,7 +9593,10 @@ body {
   }
 
   #command-dock {
-    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    /* Keep bottom: 8px from the earlier 720px rule so Cesium/Google credit
+       clearance stays a flat modelled anchor. Lift the MIC above the home
+       indicator with padding instead of moving the dock floor. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     max-width: none;
     left: 50%;
@@ -9623,9 +9626,10 @@ body {
   }
 
   #right-context-rail {
+    /* Do not set max-height here: at <=720px the rail is full-width and
+       `max-height: none` lets its credit-clearing bottom anchor govern. */
     top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
     right: max(8px, env(safe-area-inset-right, 0px));
-    max-height: calc(48vh - 16px);
   }
 
   #first-run-launcher,
