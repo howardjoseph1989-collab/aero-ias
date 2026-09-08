@@ -183,7 +183,9 @@ test('no unchanged Realtime tool definition drifts silently', () => {
     .update(JSON.stringify(unchanged))
     .digest('hex')
     .slice(0, 16);
-  assert.equal(digest, '802ed694b8887b88', 'an unchanged Realtime tool definition drifted');
+  // Re-pinned 2026-09-08: AERO IAS product-name strings in set_layer_visibility
+  // and set_visual_style descriptions. Other untouched tools must still match.
+  assert.equal(digest, '5c05299f9af32605', 'an unchanged Realtime tool definition drifted');
 });
 
 test('Radio volume and mission speed share the Sharpen slider visual language', () => {
