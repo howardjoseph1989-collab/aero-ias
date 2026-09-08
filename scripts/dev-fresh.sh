@@ -230,7 +230,7 @@ if ! grep -q "dataManager.register(cctvLayer)" src/main.js; then
   exit 1
 fi
 
-echo "Stopping all existing God's Eye View dev servers..."
+echo "Stopping all existing AERO IAS dev servers..."
 pkill -f "${ROOT_DIR}/node_modules/.bin/vite" >/dev/null 2>&1 || true
 pkill -f "${ROOT_DIR}/node_modules/vite/bin/vite.js" >/dev/null 2>&1 || true
 
@@ -246,7 +246,7 @@ fi
 echo "Clearing Vite cache..."
 rm -rf node_modules/.vite
 
-echo "Starting fresh God's Eye View dev server..."
+echo "Starting fresh AERO IAS dev server..."
 case "${HOST}" in
   localhost|127.0.0.1|::1)
     echo "Local-only mode: reachable at http://localhost:${PORT}/ (set HOST=0.0.0.0 for LAN)"
@@ -322,7 +322,7 @@ case "${OPENSKY_AUTH_MODE}" in
     echo "OpenSky auth: disabled (anonymous mode)"
     ;;
 esac
-[[ -n "${OPENAI_API_KEY}" ]] && echo "OpenAI key (voice + HUD summary): configured" || echo "OpenAI key (voice + HUD summary): not set — GEV MIC disabled"
+[[ -n "${OPENAI_API_KEY}" ]] && echo "OpenAI key (voice + HUD summary): configured" || echo "OpenAI key (voice + HUD summary): not set — AERO MIC disabled"
 [[ -n "${AISSTREAM_API_KEY}" ]] && echo "AISStream key (live vessels): configured" || echo "AISStream key (live vessels): not set — ships layer empty"
 if [[ -n "${GOOGLE_MAPS_API_KEY}" ]]; then
   echo "Startup map: Google Photorealistic 3D Tiles (direct)"
