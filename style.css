@@ -9520,3 +9520,134 @@ body.scene-playback-mode #key-setup {
   border-color: rgba(255, 170, 150, 0.65);
   outline: none;
 }
+
+/* Voice provider toggle (OpenAI Realtime | Gemini turn) */
+.gev-voice-providers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  margin-left: 0.15rem;
+}
+
+.gev-voice-provider-btn {
+  min-height: 1.1rem;
+  padding: 0 0.32rem;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  border-radius: 0.18rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.4rem;
+  letter-spacing: 0.04rem;
+  cursor: pointer;
+}
+
+.gev-voice-provider-btn.active,
+.gev-voice-provider-btn[aria-pressed='true'] {
+  color: #7ef0ff;
+  border-color: rgba(0, 212, 255, 0.7);
+  background: rgba(0, 212, 255, 0.14);
+}
+
+#gev-voice-control[data-provider='gemini'] #gev-voice-status {
+  color: #9ad7ff;
+}
+
+#command-dock .gev-voice-providers {
+  max-width: 6.4rem;
+}
+
+#command-dock.tray-open .gev-voice-providers {
+  display: none;
+}
+
+/* Mobile web / PWA: larger MIC tap targets, safe-area insets, less chrome collision.
+   This is a best-effort layout, not a claim of zero mobile bugs. */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+
+@media (max-width: 720px) {
+  #title-bar {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  #pp-toggles {
+    top: max(8px, env(safe-area-inset-top, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+  }
+
+  #intel-hud {
+    pointer-events: none;
+  }
+
+  #intel-hud button,
+  #intel-hud a,
+  #intel-hud input {
+    pointer-events: auto;
+  }
+
+  #command-dock {
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    max-width: none;
+    left: 50%;
+  }
+
+  #command-dock #gev-voice-button,
+  #gev-voice-button {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .gev-voice-provider-btn,
+  .gev-voice-tier-btn,
+  #key-setup-chip,
+  .style-btn,
+  .panel-collapse-btn,
+  .dock-tray-toggle {
+    min-height: 36px;
+    touch-action: manipulation;
+  }
+
+  #left-panel-stack {
+    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
+    left: max(8px, env(safe-area-inset-left, 0px));
+    max-height: calc(50vh - 24px);
+  }
+
+  #right-context-rail {
+    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    max-height: calc(48vh - 16px);
+  }
+
+  #first-run-launcher,
+  #key-setup {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow: auto;
+  }
+
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@media (pointer: coarse) {
+  #gev-voice-button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .gev-voice-provider-btn {
+    min-height: 32px;
+    padding: 0 0.45rem;
+    font-size: 0.55rem;
+  }
+}

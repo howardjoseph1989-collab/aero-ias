@@ -82,6 +82,15 @@ test('whitespace-only env values do not count as configured', () => {
   assert.equal(status.keys.find((key) => key.id === 'openai').set, false);
 });
 
+test('Gemini is configured when GEMINI_API_KEY or GOOGLE_API_KEY is present', () => {
+  assert.equal(keySetupStatus({}).keys.find((key) => key.id === 'gemini').set, false);
+  assert.equal(keySetupStatus({ GEMINI_API_KEY: 'AIzaSyGemini' }).keys.find((key) => key.id === 'gemini').set, true);
+  assert.equal(keySetupStatus({ GOOGLE_API_KEY: 'AIzaSyAlias' }).keys.find((key) => key.id === 'gemini').set, true);
+  const known = knownKeySetupEnvVars();
+  assert.equal(known.has('GEMINI_API_KEY'), true);
+  assert.equal(known.has('GOOGLE_API_KEY'), false, 'alias is accepted for presence, not written by the panel');
+});
+
 test('subprocess success requires a clean zero exit', () => {
   assert.equal(commandCompletedSuccessfully({ status: 0, signal: null }), true);
   assert.equal(commandCompletedSuccessfully({ status: 1, signal: null }), false);

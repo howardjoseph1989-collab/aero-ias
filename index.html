@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#061018" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="AERO IAS" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="application-name" content="AERO IAS" />
+  <meta name="description" content="AERO IAS — photorealistic 3D globe with live public signals and voice control. Mobile web / installable PWA." />
   <title>AERO IAS</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -879,7 +888,7 @@
     </div>
     <!-- Kept out of the footer row: it swaps to mission progress and errors, and
          a live region that also holds layout makes the row jump as it speaks. -->
-    <p class="first-run-note" data-first-run-status role="status" aria-live="polite">Tip: the AERO MIC button in the dock lets you talk to the map.</p>
+    <p class="first-run-note" data-first-run-status role="status" aria-live="polite">Tip: the AERO MIC button in the dock lets you talk to the map. Gemini is the recommended voice+tools path.</p>
   </aside>
 
   <!-- POWER UP — in-app key setup. Dev-server only: src/keySetup.js removes

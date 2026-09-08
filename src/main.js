@@ -37,6 +37,14 @@ import { loadPhotorealisticTileset } from './mapStartup.js';
 
 initLogoGaze();
 
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* Optional PWA installability — a failure must not block the globe. */
+    });
+  });
+}
+
 /**
  * Extract a human-readable error message from any thrown value.
  * Handles Error objects, strings, and plain objects with message/error fields.

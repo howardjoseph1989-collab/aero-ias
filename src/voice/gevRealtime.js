@@ -1,4 +1,13 @@
 import { createGevActionRunner, readLayerLifecycleSummary } from './gevActions.js';
+import { GevGeminiController } from './gevGemini.js';
+import {
+  DEFAULT_VOICE_PROVIDER,
+  normalizeVoiceProvider,
+  readStoredVoiceProvider,
+  resolveVoiceProvider,
+  voiceProviderHint,
+  writeStoredVoiceProvider,
+} from './voiceProviders.js';
 import {
   DEFAULT_VOICE_TIER,
   VOICE_COST_LIMITS,
@@ -200,29 +209,231 @@ export function initGevVoiceCommands({ viewer, styleManager, dataManager, sceneD
   const runner = createGevActionRunner({ viewer, styleManager, dataManager, sceneDirector, annotations });
   const ui = createVoiceControl({ reset: true });
   const radioLayer = dataManager?.layers?.get('radio')?.module || null;
-  const controller = new GevRealtimeController({ runner, ui, radioLayer, dataManager });
+  const openai = new GevRealtimeController({ runner, ui, radioLayer, dataManager });
+  const gemini = new GevGeminiController({ runner, ui, radioLayer, dataManager });
+  const hub = new GevVoiceHub({ openai, gemini, ui });
   // Deferred annotation outlines finish AFTER their tool result returned. Feed the
   // final outcome (resolved / failed) into the conversation so the model can honestly
   // confirm — or correct — what it narrated about a boundary it never saw land.
   if (annotations && typeof annotations.onOutlineEvent === 'function') {
-    controller.annotationEventUnsubscribe = annotations.onOutlineEvent((evt) => {
-      controller.notifyMapEvent({ type: 'map_annotation_outline', ...evt });
+    openai.annotationEventUnsubscribe = annotations.onOutlineEvent((evt) => {
+      if (hub.provider === 'openai') {
+        openai.notifyMapEvent({ type: 'map_annotation_outline', ...evt });
+      }
     });
   }
-  controller.buttonHandler = () => {
-    if (shouldIgnoreVoiceButtonClick(controller.spaceKeyHeld)) return;
-    if (controller.isActive()) controller.stop();
-    else controller.start({ pushToTalk: false });
+  hub.buttonHandler = () => {
+    if (shouldIgnoreVoiceButtonClick(hub.spaceKeyHeld)) return;
+    if (hub.isActive()) hub.stop();
+    else hub.start({ pushToTalk: false });
   };
-  ui.button.addEventListener('click', controller.buttonHandler);
+  ui.button.addEventListener('click', hub.buttonHandler);
   if (ui.tierButton) {
-    controller.tierHandler = () => controller.toggleVoiceTier();
-    ui.tierButton.addEventListener('click', controller.tierHandler);
+    hub.tierHandler = () => hub.toggleVoiceTier();
+    ui.tierButton.addEventListener('click', hub.tierHandler);
   }
-  controller.syncCostUi();
-  controller.bindPushToTalkShortcut();
-  window.__gevVoiceCommands = controller;
-  return controller;
+  ui.providerButtons?.forEach((button) => {
+    button.addEventListener('click', () => hub.setProvider(button.dataset.voiceProvider));
+  });
+  hub.syncCostUi();
+  hub.bindPushToTalkShortcut();
+  void hub.refreshAvailability();
+  window.__gevVoiceCommands = hub;
+  return hub;
+}
+
+/**
+ * Routes the shared GEV MIC chrome between OpenAI Realtime and Gemini turns.
+ * QA and Radio still talk to one object: status, runner, start/stop, setStatus.
+ */
+export class GevVoiceHub {
+  constructor({ openai, gemini, ui, availability = { openai: false, gemini: false } }) {
+    this.openai = openai;
+    this.gemini = gemini;
+    this.ui = ui;
+    this.availability = availability;
+    this.provider = resolveVoiceProvider({
+      stored: readStoredVoiceProvider(),
+      openai: availability.openai,
+      gemini: availability.gemini,
+    });
+    this.spaceKeyHeld = false;
+    this.buttonHandler = null;
+    this.tierHandler = null;
+    this.shortcutKeyDownHandler = null;
+    this.shortcutKeyUpHandler = null;
+    this.shortcutBlurHandler = null;
+    this.shortcutVisibilityHandler = null;
+    this.syncProviderUi();
+  }
+
+  get active() {
+    return this.provider === 'gemini' ? this.gemini : this.openai;
+  }
+
+  get status() {
+    return this.active.status;
+  }
+
+  get runner() {
+    return this.openai.runner;
+  }
+
+  get errors() {
+    return this.active.errors || this.openai.errors;
+  }
+
+  isActive() {
+    return this.active.isActive();
+  }
+
+  start(options) {
+    return this.active.start(options);
+  }
+
+  stop(options) {
+    const active = this.active;
+    const other = this.provider === 'gemini' ? this.openai : this.gemini;
+    active.stop?.(options);
+    if (other.isActive?.()) other.stop?.(options);
+  }
+
+  setStatus(status, detail) {
+    return this.active.setStatus(status, detail);
+  }
+
+  setMicrophoneEnabled(enabled) {
+    return this.active.setMicrophoneEnabled?.(enabled);
+  }
+
+  setVoiceSpeaker(speaker, options) {
+    return this.openai.setVoiceSpeaker?.(speaker, options);
+  }
+
+  toggleVoiceTier() {
+    return this.openai.toggleVoiceTier();
+  }
+
+  syncCostUi() {
+    this.openai.syncCostUi();
+    this.syncProviderUi();
+  }
+
+  setProvider(id) {
+    const next = normalizeVoiceProvider(id, this.provider);
+    if (next === this.provider) {
+      this.syncProviderUi();
+      return next;
+    }
+    if (this.isActive()) this.stop();
+    this.provider = writeStoredVoiceProvider(next);
+    this.syncProviderUi();
+    return this.provider;
+  }
+
+  syncProviderUi() {
+    if (this.ui?.root) this.ui.root.dataset.provider = this.provider;
+    this.ui?.providerButtons?.forEach((button) => {
+      const id = button.dataset.voiceProvider;
+      const available = id === 'gemini' ? this.availability.gemini : this.availability.openai;
+      const selected = id === this.provider;
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      button.classList.toggle('active', selected);
+      button.disabled = false;
+      button.title = id === 'gemini'
+        ? (available
+          ? 'Recommended — Gemini voice + the same 28 globe tools'
+          : 'Recommended path — needs GEMINI_API_KEY or GOOGLE_API_KEY')
+        : (available
+          ? 'Optional original OpenAI Realtime path'
+          : 'Optional original path — needs OPENAI_API_KEY');
+    });
+    if (this.ui?.helpDetail) {
+      this.ui.helpDetail.textContent = voiceProviderHint(this.provider, this.availability);
+    }
+    if (this.ui?.root) {
+      this.ui.root.dataset.geminiMode = this.provider === 'gemini' ? 'turn' : 'realtime';
+    }
+    if (this.ui?.costValue && this.provider === 'gemini') {
+      this.ui.costValue.textContent = 'TURN';
+      this.ui.costValue.dataset.level = 'ok';
+      this.ui.costValue.title = 'Gemini path is turn-based (mic → tools → spoken reply), not OpenAI Realtime billing';
+    }
+    if (this.ui?.tierButton) {
+      this.ui.tierButton.hidden = this.provider === 'gemini';
+    }
+  }
+
+  async refreshAvailability() {
+    try {
+      const response = await fetch('/api/voice/providers', { cache: 'no-store' });
+      if (!response.ok) throw new Error(String(response.status));
+      const data = await response.json();
+      this.availability = {
+        openai: Boolean(data.openai),
+        gemini: Boolean(data.gemini),
+      };
+      this.provider = resolveVoiceProvider({
+        stored: this.provider || readStoredVoiceProvider(),
+        openai: this.availability.openai,
+        gemini: this.availability.gemini,
+      });
+      writeStoredVoiceProvider(this.provider);
+    } catch {
+      this.availability = { openai: false, gemini: false };
+    }
+    this.syncProviderUi();
+    return this.availability;
+  }
+
+  bindPushToTalkShortcut() {
+    if (this.shortcutKeyDownHandler) return;
+    this.shortcutKeyDownHandler = (event) => {
+      if (!shouldHandlePushToTalkKeyDown(event)) return;
+      if (event.repeat) {
+        if (this.spaceKeyHeld) event.preventDefault();
+        return;
+      }
+      this.spaceKeyHeld = true;
+      this.active.spaceKeyHeld = true;
+      event.preventDefault();
+      this.active.pauseRadioForVoice?.();
+      if (this.active.pushToTalkKeyHeld) return;
+      if (this.isActive() && !this.active.pushToTalkMode) return;
+      this.active.pushToTalkKeyHeld = true;
+      if (this.ui?.root) this.ui.root.dataset.pushToTalk = 'held';
+      if (this.isActive()) {
+        this.active.setMicrophoneEnabled?.(true);
+        if (this.status === 'listening') this.active.setStatus('listening', 'Release Space to send');
+      } else {
+        this.start({ pushToTalk: true });
+      }
+    };
+    this.shortcutKeyUpHandler = (event) => {
+      if (!isPushToTalkKey(event)) return;
+      const wasHoldingSpace = this.spaceKeyHeld;
+      this.spaceKeyHeld = false;
+      this.active.spaceKeyHeld = false;
+      if (!this.active.pushToTalkKeyHeld) {
+        if (wasHoldingSpace) event.preventDefault();
+        return;
+      }
+      event.preventDefault();
+      this.active.releasePushToTalkKey?.();
+    };
+    this.shortcutBlurHandler = () => {
+      this.spaceKeyHeld = false;
+      this.active.spaceKeyHeld = false;
+      this.active.releasePushToTalkKey?.();
+    };
+    this.shortcutVisibilityHandler = () => {
+      if (document.visibilityState === 'hidden') this.shortcutBlurHandler();
+    };
+    document.addEventListener('keydown', this.shortcutKeyDownHandler);
+    document.addEventListener('keyup', this.shortcutKeyUpHandler);
+    window.addEventListener('blur', this.shortcutBlurHandler);
+    document.addEventListener('visibilitychange', this.shortcutVisibilityHandler);
+  }
 }
 
 export class GevRealtimeController {
@@ -2550,10 +2761,15 @@ function createVoiceControl({ reset = false } = {}) {
     root.id = 'gev-voice-control';
     root.dataset.status = 'idle';
     root.dataset.speaker = 'idle';
+    root.dataset.provider = DEFAULT_VOICE_PROVIDER;
     root.innerHTML = `
       <div class="gev-voice-heading">
         <div class="gev-voice-kicker">AI AGENT</div>
         <div id="gev-voice-status">OFF</div>
+        <div class="gev-voice-providers" role="group" aria-label="Voice provider">
+          <button type="button" class="gev-voice-provider-btn active" data-voice-provider="gemini" aria-pressed="true" title="Recommended — Gemini voice + tools">GEMINI</button>
+          <button type="button" class="gev-voice-provider-btn" data-voice-provider="openai" aria-pressed="false" title="Optional original OpenAI Realtime path">OPENAI</button>
+        </div>
         <div class="gev-voice-cost">
           <button id="gev-voice-tier" class="gev-voice-tier-btn" type="button" aria-pressed="false" title="Voice model tier — applies next session">STD</button>
           <span id="gev-voice-cost-value" class="gev-voice-cost-value" data-level="ok" title="Estimated session cost">~$0.00</span>
@@ -2606,5 +2822,6 @@ function createVoiceControl({ reset = false } = {}) {
     errorDetail: root.querySelector('#gev-voice-error-detail'),
     tierButton: root.querySelector('#gev-voice-tier'),
     costValue: root.querySelector('#gev-voice-cost-value'),
+    providerButtons: [...root.querySelectorAll('[data-voice-provider]')],
   };
 }
