@@ -235,7 +235,7 @@ if ! grep -q "dataManager.register(cctvLayer)" src/main.js; then
   exit 1
 fi
 
-echo "Stopping all existing God's Eye View dev servers..."
+echo "Stopping all existing AERO IAS dev servers..."
 pkill -f "${ROOT_DIR}/node_modules/.bin/vite" >/dev/null 2>&1 || true
 pkill -f "${ROOT_DIR}/node_modules/vite/bin/vite.js" >/dev/null 2>&1 || true
 
@@ -251,7 +251,7 @@ fi
 echo "Clearing Vite cache..."
 rm -rf node_modules/.vite
 
-echo "Starting fresh God's Eye View dev server..."
+echo "Starting fresh AERO IAS dev server..."
 case "${HOST}" in
   localhost|127.0.0.1|::1)
     echo "Local-only mode: reachable at http://localhost:${PORT}/ (set HOST=0.0.0.0 for LAN)"
@@ -334,7 +334,7 @@ else
   echo "Gemini key (turn-based voice): not set — add GEMINI_API_KEY or GOOGLE_API_KEY"
 fi
 if [[ -z "${OPENAI_API_KEY}" && -z "${GEMINI_API_KEY}" && -z "${GOOGLE_API_KEY}" ]]; then
-  echo "Voice: GEV MIC disabled until an OpenAI or Gemini key is added"
+  echo "Voice: AERO MIC disabled until a Gemini or OpenAI key is added"
 fi
 [[ -n "${AISSTREAM_API_KEY}" ]] && echo "AISStream key (live vessels): configured" || echo "AISStream key (live vessels): not set — ships layer empty"
 if [[ -n "${GOOGLE_MAPS_API_KEY}" ]]; then

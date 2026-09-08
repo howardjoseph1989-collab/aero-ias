@@ -9,14 +9,15 @@ const radio = readFileSync(new URL('./data/radio.js', import.meta.url), 'utf8');
 const rocketLaunches = readFileSync(new URL('./data/rocketLaunches.js', import.meta.url), 'utf8');
 const realtime = readFileSync(new URL('./voice/gevRealtime.js', import.meta.url), 'utf8');
 const voice = readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
+const schemaSrc = readFileSync(new URL('./voice/gevToolSchemas.mjs', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
-/** Parse the Realtime tool array out of the Vite config as real data. */
+/** Parse the Realtime tool array from the shared schema module as real data. */
 function realtimeTools() {
-  const start = voice.indexOf('const GEV_REALTIME_TOOLS = [');
-  const end = voice.indexOf('\n];', start);
+  const start = schemaSrc.indexOf('export const GEV_REALTIME_TOOLS = [');
+  const end = schemaSrc.indexOf('\n];', start);
   assert.ok(start >= 0 && end > start, 'Realtime tool schema block is missing');
-  const literal = voice.slice(start + 'const GEV_REALTIME_TOOLS = '.length, end + 2);
+  const literal = schemaSrc.slice(start + 'export const GEV_REALTIME_TOOLS = '.length, end + 2);
   // The block is pure data; evaluating it beats regexing nested schemas.
   return new Function(`return ${literal};`)();
 }
@@ -183,7 +184,9 @@ test('no unchanged Realtime tool definition drifts silently', () => {
     .update(JSON.stringify(unchanged))
     .digest('hex')
     .slice(0, 16);
-  assert.equal(digest, '802ed694b8887b88', 'an unchanged Realtime tool definition drifted');
+  // Re-pinned 2026-09-08: AERO IAS product-name strings in set_layer_visibility
+  // and set_visual_style descriptions. Other untouched tools must still match.
+  assert.equal(digest, '5c05299f9af32605', 'an unchanged Realtime tool definition drifted');
 });
 
 test('Radio volume and mission speed share the Sharpen slider visual language', () => {
@@ -273,10 +276,10 @@ test('panel collapse is presentation-only and Radio exposes explicit voice playb
   const start = ui.lastIndexOf('\n  setPanelCollapsed(panelId');
   const method = ui.slice(start, ui.indexOf('toggleCleanView(forceEnabled)', start));
   assert.doesNotMatch(method, /stopRadio|stopPlayback|setEnabled\('radio'/);
-  assert.match(voice, /'radio-panel'/);
-  assert.match(voice, /'radio'/);
-  assert.match(voice, /name:\s*'control_radio'/);
-  assert.match(voice, /enum:\s*\['enable', 'disable', 'play', 'resume', 'pause', 'stop', 'next', 'previous', 'volume', 'select', 'status'\]/);
+  assert.match(schemaSrc, /'radio-panel'/);
+  assert.match(schemaSrc, /'radio'/);
+  assert.match(schemaSrc, /name:\s*'control_radio'/);
+  assert.match(schemaSrc, /enum:\s*\['enable', 'disable', 'play', 'resume', 'pause', 'stop', 'next', 'previous', 'volume', 'select', 'status'\]/);
   const enableStart = ui.lastIndexOf('\n  _initRadioPanel()');
   const enableMethod = ui.slice(enableStart, ui.indexOf('\n  _renderRadioState(state)', enableStart));
   assert.doesNotMatch(enableMethod, /playSelectedRadio|togglePlayback\(\).*radio-enable/i);

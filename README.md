@@ -12,21 +12,7 @@ Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic,
 
 ![Orbital HUD, a tracked live globe, FLIR terrain — then OPEN SOURCED](docs/media/hero-open-source-reveal.gif)
 
-<a href="https://www.youtube.com/@bilawalsidhu">
-  <img src="docs/media/youtube-popular-videos.png" alt="The God's Eye View video series on YouTube" width="100%">
-</a>
-
-▶️ **From the project behind the viral God's Eye View series** *(formerly WorldView)* — [5M+ on YouTube](https://youtube.com/playlist?list=PL6qSg2I-7_koPbDnSMo0QeeHX_RknA2uv&si=nBGYMoHWQw41v93Q) · [25M+ across socials](https://www.google.com/search?q=god%27s+eye+view)
-
-[![Reached #1 on GitHub Trending](https://img.shields.io/badge/%231_GitHub_Trending-thank_you!-F0A63C?style=flat-square&logo=github)](https://x.com/bilawalsidhu/status/2093798887815348521)
-
-🏆 **Reached #1 on GitHub Trending, daily and weekly · August 2026**
-
-**[#8 Product of the Day](https://www.producthunt.com/products/god-s-eye-view?launch=god-s-eye-view)** · Hunted by Chris Messina, creator of the hashtag
-
-*“pretty cool”* — [Brendan Eich](https://x.com/BrendanEich/status/2094592096401490266), creator of JavaScript and co-founder of Mozilla and Brave · Featured on **[Pinokio](https://pinokio.co/posts/01m1m4p9xxm3qw7dnnpj2wr93g)**
-
-⚡ **Start without API keys.** Install with [Pinokio](https://pinokio.co/apps/github-com-bilawalsidhu-gods-eye-view) or run locally from the terminal. Add optional keys inside the app. **[→ Quick Start](#-quick-start)**
+⚡ **Start without API keys.** Install with Pinokio from this repository or run locally from the terminal. Add optional keys inside the app. **[→ Quick Start](#-quick-start)**
 
 </div>
 
@@ -44,7 +30,7 @@ Photorealistic 3D globe. Live aircraft, ships, satellites, earthquakes, traffic,
 
 AERO IAS brings public signals into one explorable globe. Track the world live. Talk to it. Break it. Extend it.
 
-Flight transponders, ship beacons, orbital elements, seismographs, and public cameras already tell us a lot about the world. God's Eye View puts them in the same place, so you can move between a global picture and an individual aircraft, ship, or street. It runs locally in your browser, with source code you can inspect and extend.
+Flight transponders, ship beacons, orbital elements, seismographs, and public cameras already tell us a lot about the world. AERO IAS puts them in the same place, so you can move between a global picture and an individual aircraft, ship, or street. It runs locally in your browser, with source code you can inspect and extend.
 
 > Half the magic is that it looks like a forbidden cockpit. The other half is that every line of code is inspectable.
 
@@ -75,7 +61,7 @@ Start with the included data sources, then add your own. Each layer is a separat
 
 <div align="center">
 
-[![YouTube video about the God's Eye View open source release](https://img.youtube.com/vi/GRJaKcXZS94/maxresdefault.jpg)](https://www.youtube.com/watch?v=GRJaKcXZS94)
+[![YouTube video about the open source release](https://img.youtube.com/vi/GRJaKcXZS94/maxresdefault.jpg)](https://www.youtube.com/watch?v=GRJaKcXZS94)
 
 ▶️ **[The full walkthrough of everything below, on YouTube](https://www.youtube.com/watch?v=GRJaKcXZS94)**
 
@@ -96,7 +82,7 @@ app's **POWER UP** panel; [Keys & Costs](#-api-keys) explains the options.
 ### Path 1 — One click, no terminal
 
 1. Install or update [Pinokio](https://desktop.pinokio.co/) to **8.2 or later**.
-2. Open [God's Eye View in Pinokio](https://pinokio.co/apps/github-com-bilawalsidhu-gods-eye-view).
+2. In Pinokio, install this repository: [howardjoseph1989-collab/aero-ias](https://github.com/howardjoseph1989-collab/aero-ias).
 3. Click **Install**, then **Start**.
 
 Available on **Windows, macOS, and Linux**. The Pinokio maintainer reports
@@ -163,7 +149,7 @@ reopens the same panel.
 
 Do not enter credentials in Pinokio 8.0.40's native **Configure** panel: that
 release does not save this nested app file correctly, and it logs submitted
-values. Use **POWER UP → Provider Settings** inside GEV instead. The Pinokio
+values. Use **POWER UP → Provider Settings** inside AERO IAS instead. The Pinokio
 8.2 announcement fixes installation; it does not establish that this separate
 Configure issue is resolved. On macOS, the Keychain via
 `./scripts/dev-fresh.sh` remains the stronger storage option.
@@ -229,7 +215,7 @@ The cockpit even carries its own briefing strip: nearby live signals, regional h
 
 > Voice defaults to **Gemini** (recommended). Paste a Google AI Studio key and talking drives the globe through the same 28 tools as the original. **OpenAI Realtime** remains an optional original path. Without either key the app still runs — the mic names the missing recommended Gemini key. An OpenAI key also drives the **AI HUD summary**.
 
-Click **GEV MIC**, grant the microphone, and just talk. The mic chrome defaults to **GEMINI**; switch to **OPENAI** only if you want the original Realtime session. This is more than a voice-controlled remote:
+Click **AERO MIC**, grant the microphone, and just talk. The mic chrome defaults to **GEMINI**; switch to **OPENAI** only if you want the original Realtime session. This is more than a voice-controlled remote:
 
 **Provider honesty**
 
@@ -282,7 +268,7 @@ This is a first-pass mobile layout: larger MIC / HUD tap targets, safer viewport
 1. Start the app on a machine you trust (`npm run dev`). Default bind is **localhost only**.
 2. To open it from a phone on the same LAN, opt in explicitly: `npm run dev -- --host 0.0.0.0 --port 4173`. Anyone who can reach that host can spend your brokered keys — see [SECURITY.md](SECURITY.md) and the LAN warning in [Keys & Costs](#-api-keys).
 3. In the phone browser (Safari or Chrome), open `http://<your-lan-ip>:4173`.
-4. Grant **microphone** when you tap **GEV MIC**. iOS Safari requires a user gesture and will not keep a mic session in a background tab.
+4. Grant **microphone** when you tap **AERO MIC**. iOS Safari requires a user gesture and will not keep a mic session in a background tab.
 5. Prefer **HTTPS** (or localhost) for `getUserMedia`. A plain `http://` LAN origin may refuse the mic on some browsers.
 
 ### Add to Home Screen
@@ -512,12 +498,12 @@ AERO IAS runs on **public data, clear sources, and local-first execution.** No s
 
 **Status:** An evolving open-source client for exploration and learning — a fast, hackable foundation, not a hardened production service. Released under the **[MIT License](LICENSE)**. Bundled and live datasets carry their own terms — see **[DATA_SOURCES.md](DATA_SOURCES.md)**. Security model: **[SECURITY.md](SECURITY.md)**. Want to contribute? **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
-**Maintainers:** [Bilawal Sidhu](https://github.com/bilawalsidhu) and [Sameh Khamis](https://github.com/samehkhamis) at [Halfpixel](https://halfpixel.ai).
+**This fork:** branded **AERO IAS**. Original authors: [Bilawal Sidhu](https://github.com/bilawalsidhu) and [Sameh Khamis](https://github.com/samehkhamis) at [Halfpixel](https://halfpixel.ai). See [NOTICE](NOTICE).
 
 <sub>Media note: the capture GIFs on this page show Google Photorealistic 3D Tiles and live data layers, used promotionally with in-frame attribution; they aren't licensed for standalone reuse. See [media provenance and permissions](docs/media/README.md); full source terms in [DATA_SOURCES.md](DATA_SOURCES.md).</sub>
 
 > [!IMPORTANT]
-> God's Eye View is an exploratory visualization of public and third-party data.
+> AERO IAS is an exploratory visualization of public and third-party data.
 > Data may be delayed, incomplete, modeled, inferred, or wrong. Do not use it
 > for flight or maritime navigation, emergency response, medical or health
 > decisions, investment decisions, or other safety-critical or operational
@@ -527,22 +513,26 @@ AERO IAS runs on **public data, clear sources, and local-first execution.** No s
 
 ## 🧭 What's Next
 
-First — thank you. To everyone who watched the God-view demos and went off to build their own, and to everyone who kept asking for the code: I'm grateful. And when I polled whether this should go open source, you weren't subtle about it:
+First — thank you. To everyone who watched the original demos and went off to build their own, and to everyone who kept asking for the code: I'm grateful. And when I polled whether this should go open source, you weren't subtle about it:
 
-<img src="docs/media/open-source-survey.png" alt="Community survey on open-sourcing God's Eye View" width="460">
+<img src="docs/media/open-source-survey.png" alt="Community survey on open-sourcing the original project" width="460">
 
 So here it is. Step inside the spy-thriller cockpit — except the data is real — and let's turn this into our shared sandbox for making sense of the world, and have fun doing it. This repo is the baseline, it stays open, and the whole point is for you to break things and bolt on layers we haven't thought of yet.
 
 One heads-up from the inside: build in this space for a week and you learn that **the present is the cheap part**. The moment you try to go back in time — tiling, serving, and scrubbing *what happened* and *what changed* at any real resolution — the data gets expensive and the compute gets brutal. That's the long game.
 
-**Update — a hosted version is coming.** We originally planned to keep this repository as the open-source client and build a separate professional product. Then the launch happened, and the loudest request wasn't another feature — it was *"just give me a link."* So we're building an official hosted God's Eye View at [Halfpixel](https://halfpixel.ai): no installation, just open it in your browser. The hosted version is the easiest way into this open-source project. More soon.
-
 ---
+
+## Credits
+
+This repository is a branded fork of the MIT-licensed project originally published as God's Eye View (also known as WorldView) by Bilawal Sidhu: [bilawalsidhu/gods-eye-view](https://github.com/bilawalsidhu/gods-eye-view). See [NOTICE](NOTICE).
+
+The original project’s demo series and [Map the World](https://maptheworld.ai/) newsletter are upstream attribution, not this fork’s product name.
 
 <div align="center">
 
 ▶️ [Watch the God's Eye View series](https://youtube.com/playlist?list=PL6qSg2I-7_koPbDnSMo0QeeHX_RknA2uv&si=nBGYMoHWQw41v93Q) · 📬 [Map the World](https://maptheworld.ai/) — the newsletter behind the project
 
-**🌐 AERO IAS. No place left behind.** Fork of [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view).
+**🌐 AERO IAS. No place left behind.**
 
 </div>

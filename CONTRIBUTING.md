@@ -1,14 +1,14 @@
-# Contributing to God's Eye View
+# Contributing to AERO IAS
 
-Thanks for being here. God's Eye View is an open foundation for live spatial intelligence in the browser, and it gets better when more people run it, break it, and extend it.
+Thanks for being here. AERO IAS is an open foundation for live spatial intelligence in the browser, and it gets better when more people run it, break it, and extend it.
 
 ## Getting set up
 
 Use Node.js 24.14.x or 26.x (also enforced by `package.json`).
 
 ```bash
-git clone https://github.com/bilawalsidhu/gods-eye-view.git
-cd gods-eye-view
+git clone https://github.com/howardjoseph1989-collab/aero-ias.git
+cd aero-ias
 nvm install 24.14.0
 nvm use 24.14.0
 npm install
@@ -61,10 +61,10 @@ The highest-leverage places to jump in:
 
 ## Maintainers
 
-God's Eye View is maintained by [Bilawal Sidhu](https://github.com/bilawalsidhu)
-and [Sameh Khamis](https://github.com/samehkhamis) at
-[Halfpixel](https://halfpixel.ai). Either maintainer can review and merge
-contributions.
+This AERO IAS fork is based on the original project by
+[Bilawal Sidhu](https://github.com/bilawalsidhu) and
+[Sameh Khamis](https://github.com/samehkhamis) at
+[Halfpixel](https://halfpixel.ai). See [NOTICE](NOTICE).
 
 ## Ground rules
 

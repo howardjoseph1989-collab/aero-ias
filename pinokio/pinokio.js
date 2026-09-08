@@ -1,7 +1,7 @@
 module.exports = {
   version: '3.6',
-  title: 'AERO IAS',
-  description: 'A live 3D intelligence console for planet Earth (AERO IAS, fork of God\'s Eye View).',
+  title: "AERO IAS",
+  description: 'AERO IAS — a live 3D intelligence console for planet Earth.',
   menu: async (kernel, info) => {
     const installed = await kernel.exists(__dirname, '.installed');
     const installing = info.running('install.js');

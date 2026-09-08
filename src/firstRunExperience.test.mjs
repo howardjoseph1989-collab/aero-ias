@@ -649,21 +649,20 @@ test('the DISPLAY rail starts collapsed on a first run, and a stored choice wins
 // ── Voice: instruction-only, tool schema byte-unchanged ─────────────────────
 
 test('the voice TOOL SCHEMA is byte-identical to main — the mission mapping is instructions only', () => {
-  const src = fs.readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
-  const start = src.indexOf('const GEV_REALTIME_TOOLS = [');
-  assert.ok(start > 0, 'GEV_REALTIME_TOOLS must still be a single literal array');
-  const end = src.indexOf('\n];\n', start);
-  const block = src.slice(start, end + 4);
+  const schemaSrc = fs.readFileSync(new URL('./voice/gevToolSchemas.mjs', import.meta.url), 'utf8');
+  const start = schemaSrc.indexOf('export const GEV_REALTIME_TOOLS = [');
+  assert.ok(start >= 0, 'GEV_REALTIME_TOOLS must still be a single literal array in gevToolSchemas.mjs');
+  const end = schemaSrc.indexOf('\n];\n', start);
+  const block = schemaSrc.slice(start, end + 4);
 
-  // Re-pinned 2026-08-28: the Provider Settings / Esri release DELIBERATELY
-  // extends set_map_stack's enum with 'esri-imagery' (a real new basemap —
-  // exactly the kind of schema change this pin exists to make loud). The
-  // guarded claim is unchanged: first-run missions ride existing tools, and
-  // any NEW drift from this recorded schema still fails here.
-  assert.equal(block.length, 31189, 'tool schema byte length drifted from the pinned release schema');
+  // Re-pinned after merging AERO IAS rebrand: product-name strings in
+  // fly_to_location / set_layer_visibility / set_visual_style descriptions.
+  // Schema lives in gevToolSchemas.mjs so Gemini and OpenAI share one inventory.
+  // First-run missions still ride existing tools; any NEW drift fails here.
+  assert.equal(block.length, 31178, 'tool schema byte length drifted from the pinned release schema');
   assert.equal(
     crypto.createHash('sha256').update(block).digest('hex'),
-    '73aaabdb169a5478893d28688f327a21edd32ed3ec16fc6287bd944ed77beecf',
+    '4071e809b4b811813f505a25afa8cf83034b744cbf697835960c8796eb14e217',
     'the first-run missions must ride EXISTING tools: no schema edit, no cache bust',
   );
 
@@ -671,6 +670,7 @@ test('the voice TOOL SCHEMA is byte-identical to main — the mission mapping is
   // string, whose rollback is deleting that string. Anchored to a LIVE array
   // entry — a quote at the start of its own line — so commenting the paragraph
   // out reads as the removal it is, not as a passing substring match.
+  const src = fs.readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
   assert.match(
     src,
     /\n\s+'NAMED VIEWS are shorthand/,
@@ -688,7 +688,7 @@ test('the voice TOOL SCHEMA is byte-identical to main — the mission mapping is
 });
 
 test('every layer a mission drives is already in the shipped set_layer_visibility enum', () => {
-  const src = fs.readFileSync(new URL('../vite.config.js', import.meta.url), 'utf8');
+  const src = fs.readFileSync(new URL('./voice/gevToolSchemas.mjs', import.meta.url), 'utf8');
   const tool = src.slice(src.indexOf("name: 'set_layer_visibility'"), src.indexOf("name: 'show_data_layers_menu'"));
   const missionLayerIds = Object.values(FIRST_RUN_MISSIONS).flatMap((mission) => mission.layerIds || []);
   assert.ok(missionLayerIds.length > 0);
