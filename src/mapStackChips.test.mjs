@@ -334,7 +334,13 @@ test('the bottom command dock owns Map Source and the retired left panel is abse
   assert.doesNotMatch(html, /map-stack-select/, 'the SOURCE dropdown is replaced by the chip row');
   assert.match(
     html,
-    /<section id="map-source-dock" class="map-source-section"[\s\S]*?<div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"><\/div>/,
+    /id="command-dock"[\s\S]*?<section id="map-source-dock" class="chrome-module map-source-section" data-chrome-module="source"[\s\S]*?id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"><\/div>/,
+    'Map Source stays a floatable bottom-toolbar module that still owns the chip row',
+  );
+  assert.match(
+    html,
+    /id="map-source-dock"[\s\S]*?id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"/,
+    'the five-source chip row remains the Map Source control surface',
   );
   assert.doesNotMatch(html, /id="stack-panel"/, 'the duplicate left MAP STACK panel is retired');
   assert.match(html, /id="map-source-label">MAP SOURCE<[\s\S]*?id="map-stack-status"/);
