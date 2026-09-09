@@ -46,28 +46,23 @@ test('exactly three camera quick views sit on the bottom bar', () => {
   assert.deepEqual([...QUICK_VIEW_IDS], ['global', 'birds-eye', 'street']);
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
-  const dock = html.match(/id="command-dock"[\s\S]*?<\/div>\s*<div id="left-panel-stack"/);
-  assert.ok(dock, 'command dock markup is missing');
-  assert.match(dock[0], /id="top-center-actions"[^>]*aria-label="Quick views"/);
-  assert.match(dock[0], /id="reset-globe-view"/);
-  assert.match(dock[0], /id="quick-view-birds-eye"/);
-  assert.match(dock[0], /id="quick-view-street"/);
-  assert.equal((dock[0].match(/data-quick-view="/g) || []).length, 3);
+  const chrome = html.match(/id="map-chrome"[\s\S]*?id="command-dock"[\s\S]*?id="map-nav-hud"/);
+  assert.ok(chrome, 'one bottom toolbar overlay is missing');
+  assert.match(html, /id="command-dock"[\s\S]*?id="left-panel-stack"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="top-center-actions"[^>]*aria-label="Quick views"/);
+  assert.match(html, /id="reset-globe-view"/);
+  assert.match(html, /id="quick-view-birds-eye"/);
+  assert.match(html, /id="quick-view-street"/);
+  assert.equal((html.match(/data-quick-view="/g) || []).length, 3);
   assert.doesNotMatch(html, /id="quick-view-cockpit"|id="quick-view-crt"|id="quick-view-follow"/);
   assert.match(html, /id="map-nav-hud"/);
   assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-zoom-out"/);
   assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-zoom-in"/);
   assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-nav-spin"/);
   assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-nav-north"/);
-  assert.doesNotMatch(html, /id="command-dock"[\s\S]*?id="map-zoom-controls"/);
-  assert.match(
-    css,
-    /body:not\(\.cockpit-mode\) #left-panel-stack\s*\{[\s\S]*?bottom:\s*var\(--chrome-bottom-features\)/,
-  );
-  assert.match(
-    css,
-    /body:not\(\.cockpit-mode\) #right-context-rail\s*\{[\s\S]*?bottom:\s*var\(--chrome-bottom-features\)/,
-  );
+  assert.match(html, /id="command-dock"[\s\S]*?id="map-zoom-controls"/);
+  assert.match(css, /#map-chrome\s*\{[\s\S]*?position:\s*fixed;/);
+  assert.match(css, /\.chrome-module\.is-floating\s*\{[\s\S]*?position:\s*fixed;/);
   assert.match(css, /#map-nav-hud\s*\{[\s\S]*?position:\s*fixed;/);
   assert.match(css, /White glass chrome/);
   assert.match(css, /border: 2px solid #ffffff/);

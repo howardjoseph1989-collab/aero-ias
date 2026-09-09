@@ -474,33 +474,29 @@
   </div>
   <button id="clean-view-exit" title="Return UI controls">EXIT CLEAN VIEW</button>
 
-  <aside id="map-nav-hud" aria-label="Map navigation">
-    <button id="map-nav-drag" type="button" aria-label="Drag navigation HUD" title="Drag to move this HUD">
+  <!-- Viewport-fixed map chrome: one bottom toolbar of floatable modules. -->
+  <div id="map-chrome">
+  <div id="command-dock" aria-label="AERO IAS map controls">
+  <section class="chrome-module" data-chrome-module="search" aria-label="Search and My Location">
+    <button type="button" class="chrome-module-handle" aria-label="Move search group" title="Drag to move this group">
       <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
     </button>
-    <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
-      <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
-        <span class="material-symbols-outlined" aria-hidden="true">remove</span>
-        <span>OUT</span>
-      </button>
-      <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
-        <span class="material-symbols-outlined" aria-hidden="true">add</span>
-        <span>IN</span>
+    <div class="chrome-search-row">
+      <label class="chrome-search-label" for="location-search">SEARCH</label>
+      <input type="text" id="location-search" placeholder="Search any location..." autocomplete="off" spellcheck="false" />
+      <button id="search-toggle" class="search-toggle-btn" type="button" title="Search any location">
+        <span>&#x1F50E;</span>
       </button>
     </div>
-    <button id="map-nav-spin" type="button" aria-label="Orbit current view" title="360 orbit around the current look">
-      <span class="material-symbols-outlined" aria-hidden="true">360</span>
-      <span>360</span>
+    <button id="my-location-btn" type="button" aria-label="Fly to my location" title="Use GPS to fly to my location">
+      <span class="material-symbols-outlined" aria-hidden="true">my_location</span>
+      <span>MY LOCATION</span>
     </button>
-    <button id="map-nav-north" type="button" aria-label="Reset north" title="Reset heading to north">
-      <span class="material-symbols-outlined" aria-hidden="true">explore</span>
-      <span>NORTH</span>
+  </section>
+  <nav id="top-center-actions" class="chrome-module" data-chrome-module="views" aria-label="Quick views">
+    <button type="button" class="chrome-module-handle" aria-label="Move views group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
     </button>
-  </aside>
-
-  <!-- Unified bottom command dock: every map feature lives here -->
-  <div id="command-dock" aria-label="AERO IAS map controls">
-  <nav id="top-center-actions" aria-label="Quick views">
     <button id="reset-globe-view" class="quick-view-chip" type="button" data-quick-view="global" aria-label="Reset to full globe view" title="Global — full world view">
       <span class="material-symbols-outlined" aria-hidden="true">public</span>
       <span>GLOBAL</span>
@@ -514,7 +510,10 @@
       <span>STREET</span>
     </button>
   </nav>
-  <div id="map-action-dock" class="map-action-dock" role="group" aria-label="Map actions">
+  <div id="map-action-dock" class="chrome-module map-action-dock" data-chrome-module="actions" role="group" aria-label="Map actions">
+    <button type="button" class="chrome-module-handle" aria-label="Move actions group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
     <button id="clear-selected-layers" type="button" aria-label="Clear selected data layers" title="Turn off all selected data layers">
       <span class="material-symbols-outlined" aria-hidden="true">layers_clear</span>
       <span>CLEAR</span>
@@ -524,7 +523,10 @@
       <span>SHARE</span>
     </button>
   </div>
-  <section id="map-source-dock" class="map-source-section" aria-labelledby="map-source-label">
+  <section id="map-source-dock" class="chrome-module map-source-section" data-chrome-module="source" aria-labelledby="map-source-label">
+    <button type="button" class="chrome-module-handle" aria-label="Move map source group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
     <div class="map-source-heading">
       <span id="map-source-label">MAP SOURCE</span>
       <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
@@ -532,7 +534,10 @@
     <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
   </section>
   <!-- Control panel -->
-  <div id="control-panel" class="panel-collapsible collapsed">
+  <div id="control-panel" class="chrome-module panel-collapsible collapsed" data-chrome-module="presets">
+    <button type="button" class="chrome-module-handle" aria-label="Move visual presets group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
     <div class="panel-glow"></div>
     <div class="panel-inner">
       <button id="control-panel-toggle" class="panel-header dock-tray-toggle" type="button"
@@ -589,7 +594,10 @@
   </div>
 
   <!-- Location bar -->
-  <div id="location-bar" class="panel-collapsible collapsed">
+  <div id="location-bar" class="chrome-module panel-collapsible collapsed" data-chrome-module="places">
+    <button type="button" class="chrome-module-handle" aria-label="Move places group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
     <div class="panel-glow"></div>
     <div class="location-inner">
       <div class="location-toolbar">
@@ -606,19 +614,15 @@
         <div class="location-bar-divider" id="location-bar-divider"></div>
         <div class="location-city-row">
           <div id="location-pills" class="location-pills"></div>
-          <div class="location-search-wrap">
-            <button id="search-toggle" class="search-toggle-btn" title="Search any location">
-              <span>&#x1F50E;</span>
-            </button>
-            <input type="text" id="location-search" placeholder="Search any location..." autocomplete="off" spellcheck="false" />
-          </div>
         </div>
       </div>
     </div>
   </div>
-  </div>
 
-  <div id="left-panel-stack">
+  <div id="left-panel-stack" class="chrome-module" data-chrome-module="layers">
+    <button type="button" class="chrome-module-handle" aria-label="Move layers group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
   <!-- Data Layer Toggle Panel -->
   <div id="data-panel" class="panel-collapsible collapsed active" data-panel-id="data-panel">
     <div class="panel-glow"></div>
@@ -728,7 +732,10 @@
   </div>
 
   <!-- Global Context is deliberately independent from the left layer accordion. -->
-  <aside id="right-context-rail">
+  <aside id="right-context-rail" class="chrome-module" data-chrome-module="context">
+    <button type="button" class="chrome-module-handle" aria-label="Move context group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
     <div id="global-context-panel" class="panel-collapsible collapsed" data-panel-id="global-context-panel">
       <div class="panel-glow"></div>
       <div class="global-context-panel-inner">
@@ -871,6 +878,32 @@
       </div>
     </div>
   </aside>
+
+  <aside id="map-nav-hud" class="chrome-module" data-chrome-module="nav" aria-label="Map navigation">
+    <button id="map-nav-drag" class="chrome-module-handle" type="button" aria-label="Move navigation group" title="Drag to move this group">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
+    <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
+      <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+        <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+        <span>OUT</span>
+      </button>
+      <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        <span>IN</span>
+      </button>
+    </div>
+    <button id="map-nav-spin" type="button" aria-label="Orbit current view" title="360 orbit around the current look">
+      <span class="material-symbols-outlined" aria-hidden="true">360</span>
+      <span>360</span>
+    </button>
+    <button id="map-nav-north" type="button" aria-label="Reset north" title="Reset heading to north">
+      <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+      <span>NORTH</span>
+    </button>
+  </aside>
+  </div>
+  </div>
 
   <div id="scene-runtime"></div>
 
