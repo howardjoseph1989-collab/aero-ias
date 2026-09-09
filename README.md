@@ -257,11 +257,23 @@ Twenty-eight tools, four jobs — the commands below come straight from the prod
 
 ---
 
+## 🧭 Chrome layout
+
+Menus live on the **top and bottom edges** so the globe stays visible in the center.
+
+- **Top:** DATA LAYERS, SCENES, DISPLAY, CCTV, and CONTEXT collapse into chips. Open a chip and its panel drops down — it does not sit in a left/right column over the planet.
+- **Bottom:** The command dock keeps Location, Visual Presets, map sources, pin/trays, Gemini + optional OpenAI, and the **AERO MIC** control. The mic is a large high-contrast target with distinct idle / listening / executing / error states.
+- **Cockpit** still uses the original left-lane instruments.
+
+Layer list, map sources, dock capabilities, and all **28 gevActions** tools are unchanged.
+
+---
+
 ## 📱 Mobile / PWA
 
 AERO IAS is a **Vite + Cesium browser client**. This fork is not a Play Store / App Store native app. On a phone or tablet you run the **mobile web** build (or Add to Home Screen).
 
-This is a first-pass mobile layout: larger MIC / HUD tap targets, safer viewport / notch insets, and less chrome collision. **It is not a claim of zero mobile bugs** — Cesium, live layers, and cockpit chrome are still desktop-first.
+This is a first-pass mobile layout: a large **AERO MIC** tap target, top/bottom chrome so the globe center stays clear, safer viewport / notch insets, and less chrome collision. **It is not a claim of zero mobile bugs** — Cesium, live layers, and cockpit chrome are still desktop-first.
 
 ### Run it on your phone
 
