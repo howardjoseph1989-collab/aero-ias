@@ -16,11 +16,12 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
   use that exact string. See [NOTICE](NOTICE) for upstream attribution.
 - Map-view chrome is a **white glass bottom bar**: transparent panels, white
   outlines, and large white labels so controls stay readable on the dark globe.
-  Feature menus (layers, scenes, display, context), map sources, zoom, and
-  essential toggles sit on the bottom edge. The top keeps only compact **quick
-  views** (Global, Street, Cockpit, CRT/NVG/FLIR, Follow). **AERO MIC** stays
-  the largest control. Layers, Gemini + OpenAI, and the 28 voice tools are
-  unchanged. Cockpit still uses the original left-lane instruments.
+  Every feature and action — quick views, zoom, map sources, layers, scenes,
+  display, context, and essential toggles — sits in one bottom dock. The top
+  keeps only the AERO IAS title. **AERO MIC** stays the largest control
+  (white idle, cyan/green listening, red error; label text stays white).
+  Layers, Gemini + OpenAI, and the 28 voice tools are unchanged. Cockpit still
+  uses the original left-lane instruments.
 - Gemini microphone start now tries progressive `getUserMedia` constraints
   (ideal → `audio:true` → any device), checks `enumerateDevices` and HTTPS,
   and maps `NotFoundError` / `NotAllowedError` / `NotReadableError` to clear

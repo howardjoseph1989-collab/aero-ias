@@ -9678,9 +9678,9 @@ body {
    ═══════════════════════════════════════════════ */
 
 body:not(.cockpit-mode) {
-  --chrome-chip-height: 48px;
+  --chrome-chip-height: 56px;
   --chrome-top: max(10px, env(safe-area-inset-top, 0px));
-  --chrome-bottom-features: calc(2vh + 8.4rem);
+  --chrome-bottom-features: calc(2vh + 12.5rem);
 }
 
 body:not(.cockpit-mode) #title-bar {
@@ -9708,33 +9708,39 @@ body:not(.cockpit-mode) #style-indicator {
   max-width: min(920px, calc(100vw - 12rem));
 }
 
+#command-dock #top-center-actions {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: auto;
+  display: flex;
+  max-width: none;
+  transform: none;
+}
+
 #top-center-actions .quick-view-chip {
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
   min-width: 72px;
-  min-height: 52px;
+  min-height: 64px;
   height: auto;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 12px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 #top-center-actions .quick-view-chip .material-symbols-outlined {
-  font-size: 22px;
-}
-
-body:not(.cockpit-mode) #top-center-actions {
-  top: var(--chrome-top);
+  font-size: 26px;
 }
 
 body:not(.cockpit-mode) #top-center-actions button {
   width: auto;
   min-width: 72px;
-  min-height: 52px;
+  min-height: 64px;
   height: auto;
 }
 
@@ -9906,7 +9912,7 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   display: block;
   margin-top: 0.16rem;
   color: #ffffff;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.05rem;
 }
@@ -9968,7 +9974,7 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 
 @media (max-width: 900px) {
   body:not(.cockpit-mode) {
-    --chrome-bottom-features: calc(2vh + 10.5rem);
+    --chrome-bottom-features: calc(2vh + 13rem);
   }
 
   body:not(.cockpit-mode) #left-panel-stack,
@@ -9980,16 +9986,11 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   body:not(.cockpit-mode) #style-indicator {
     display: none;
   }
-
-  body:not(.cockpit-mode) #top-center-actions {
-    top: var(--chrome-top);
-    max-width: calc(100vw - 8rem);
-  }
 }
 
 @media (max-width: 720px) {
   body:not(.cockpit-mode) {
-    --chrome-bottom-features: calc(8px + 14.5rem);
+    --chrome-bottom-features: calc(8px + 16.5rem);
   }
 
   body:not(.cockpit-mode) #title-bar h1 {
@@ -10068,9 +10069,9 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   }
 
   #command-dock .map-stack-chip {
-    min-height: 48px;
+    min-height: 52px;
     padding: 8px 6px;
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -10104,10 +10105,29 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
    ═══════════════════════════════════════════════ */
 
 body:not(.cockpit-mode) {
-  --chrome-glass: rgba(6, 12, 18, 0.28);
+  --chrome-glass: rgba(6, 12, 18, 0.22);
   --chrome-line: #ffffff;
   --chrome-ink: #ffffff;
 }
+
+#command-dock {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+#command-dock > #map-zoom-controls { order: 1; }
+#command-dock > #top-center-actions { order: 2; }
+#command-dock > #gev-voice-control { order: 3; }
+#command-dock > #map-source-dock { order: 4; }
+#command-dock > #map-action-dock { order: 5; }
+#command-dock > #location-bar { order: 6; }
+#command-dock > #control-panel { order: 7; }
 
 #top-center-actions .quick-view-chip,
 #map-zoom-controls button,
@@ -10121,10 +10141,13 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
 #command-dock > #location-bar,
 #command-dock > #control-panel,
 #command-dock > #map-source-dock,
-#command-dock .map-stack-chip {
+#command-dock .map-stack-chip,
+#command-dock .style-btn,
+#command-dock .location-pill,
+#command-dock .search-toggle-btn {
   color: #ffffff;
-  background: rgba(6, 12, 18, 0.28);
-  border: 1.5px solid #ffffff;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
   box-shadow: none;
   backdrop-filter: blur(18px) saturate(1.2);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
@@ -10133,7 +10156,7 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
 #top-center-actions .quick-view-chip {
   border-radius: 12px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -10141,14 +10164,16 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
 #map-zoom-controls .material-symbols-outlined,
 #map-action-dock .material-symbols-outlined {
   color: #ffffff;
-  font-size: 22px;
+  font-size: 26px;
 }
 
 #top-center-actions .quick-view-chip:hover,
 #map-zoom-controls button:hover,
 #map-action-dock button:hover,
-#command-dock .map-stack-chip:hover {
-  background: rgba(255, 255, 255, 0.12);
+#command-dock .map-stack-chip:hover,
+#command-dock .style-btn:hover,
+#command-dock .location-pill:hover {
+  background: rgba(255, 255, 255, 0.14);
   border-color: #ffffff;
   color: #ffffff;
   transform: none;
@@ -10158,7 +10183,7 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
 #map-action-dock {
   display: flex;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
   pointer-events: auto;
 }
 
@@ -10169,14 +10194,15 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-width: 56px;
-  min-height: 56px;
-  padding: 6px 10px;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 8px 12px;
   border-radius: 12px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
+  color: #ffffff;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -10188,33 +10214,38 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-l
 #command-dock .location-toolbar-label,
 #command-dock #map-source-label,
 #command-dock .map-stack-chip,
-#command-dock .btn-label {
+#command-dock .btn-label,
+#command-dock .location-pill {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
-#command-dock .map-stack-chip {
-  min-height: 48px;
+#command-dock .map-stack-chip,
+#command-dock .style-btn,
+#command-dock .location-pill {
+  min-height: 52px;
   border-radius: 10px;
 }
 
-#command-dock .map-stack-chip.active {
+#command-dock .map-stack-chip.active,
+#command-dock .style-btn.active {
   background: rgba(255, 255, 255, 0.18);
   border-color: #ffffff;
   color: #ffffff;
 }
 
 #command-dock > #gev-voice-control {
-  background: rgba(6, 12, 18, 0.28);
-  border: 1.5px solid #ffffff;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
 }
 
 #command-dock #gev-voice-detail,
 #command-dock #gev-voice-status,
 #command-dock .gev-voice-kicker,
-#command-dock .gev-voice-provider-btn {
+#command-dock .gev-voice-provider-btn,
+#command-dock #gev-voice-control[data-status='executing'] .gev-mic-label {
   color: #ffffff;
 }
 
@@ -10227,4 +10258,12 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-l
 #command-dock .gev-mic-orbit img {
   filter: brightness(10) grayscale(1);
   opacity: 1;
+}
+
+#command-dock .panel-title::after,
+#command-dock .location-toolbar-label::after,
+#command-dock #control-panel .panel-title::after,
+#command-dock .btn-icon,
+#command-dock .share-icon {
+  color: #ffffff;
 }

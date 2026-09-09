@@ -44,13 +44,13 @@ test('quick-view style chips map onto existing visual presets', () => {
   assert.equal(styleIdForQuickView('global'), null);
 });
 
-test('chrome places quick views on top and feature menus on the bottom bar', () => {
+test('chrome places every map control on the white-glass bottom bar', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
-  assert.match(html, /id="top-center-actions"[^>]*aria-label="Quick views"/);
-  assert.match(html, /id="quick-view-street"/);
-  assert.match(html, /id="map-zoom-out"/);
-  assert.match(html, /id="map-zoom-in"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="top-center-actions"[^>]*aria-label="Quick views"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="quick-view-street"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="map-zoom-out"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="map-zoom-in"/);
   assert.match(html, /id="command-dock"[\s\S]*?id="clear-selected-layers"/);
   assert.match(html, /id="command-dock"[\s\S]*?id="share-btn"/);
   assert.match(
@@ -62,5 +62,5 @@ test('chrome places quick views on top and feature menus on the bottom bar', () 
     /body:not\(\.cockpit-mode\) #right-context-rail\s*\{[\s\S]*?bottom:\s*var\(--chrome-bottom-features\)/,
   );
   assert.match(css, /White glass chrome/);
-  assert.match(css, /border: 1\.5px solid #ffffff/);
+  assert.match(css, /border: 2px solid #ffffff/);
 });
