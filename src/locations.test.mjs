@@ -13,11 +13,15 @@ import {
   PLACE_VIEWPORT_MAX_SPAN_KM,
   PLACE_ANCHOR_OFFSET_RATIO,
   flyToGlobeView,
+  flyToBirdsEyeView,
+  flyToStreetView,
   flyToPresetLocation,
   geocodeNavigationMode,
   regionFramingPlan,
   REGION_SWATH_SPAN_KM,
   GLOBE_VIEW,
+  BIRDS_EYE_VIEW,
+  STREET_VIEW,
   searchAndFlyTo,
 } from './locations.js';
 
@@ -32,6 +36,7 @@ function stubViewer() {
         latitude: Cesium.Math.toRadians(30.2672),
         height: 1200,
       },
+      heading: 0,
       cancelFlight() {},
       flyTo(options) { flights.push(options); },
       flyToBoundingSphere(sphere, options) { flights.push({ sphere, ...options }); },
@@ -517,6 +522,37 @@ test('a globe flight without callbacks still flies (both hooks are optional)', (
   assert.equal(target.heightM, GLOBE_VIEW.heightM);
   assert.equal(viewer.flights[0].complete, undefined);
   assert.equal(viewer.flights[0].cancel, undefined);
+});
+
+test('BIRDS_EYE_VIEW sits between street and globe and uses Cesium complete/cancel hooks', () => {
+  assert.ok(BIRDS_EYE_VIEW.heightM > STREET_VIEW.heightM);
+  assert.ok(BIRDS_EYE_VIEW.heightM < GLOBE_VIEW.heightM);
+  assert.equal(BIRDS_EYE_VIEW.pitchDeg, -72);
+  const viewer = stubViewer();
+  const fired = [];
+  const target = flyToBirdsEyeView(viewer, {
+    onComplete: () => fired.push('complete'),
+    onCancel: () => fired.push('cancel'),
+  });
+  assert.equal(target.heightM, BIRDS_EYE_VIEW.heightM);
+  assert.equal(typeof viewer.flights[0].complete, 'function');
+  assert.equal('onComplete' in viewer.flights[0], false);
+  viewer.flights[0].complete();
+  assert.deepEqual(fired, ['complete']);
+});
+
+test('STREET_VIEW keeps the current point and uses Cesium complete/cancel hooks', () => {
+  const viewer = stubViewer();
+  const fired = [];
+  const target = flyToStreetView(viewer, {
+    onComplete: () => fired.push('complete'),
+    onCancel: () => fired.push('cancel'),
+  });
+  assert.equal(target.heightM, STREET_VIEW.heightM);
+  assert.equal(viewer.flights[0].complete !== undefined, true);
+  assert.equal('onComplete' in viewer.flights[0], false);
+  viewer.flights[0].complete();
+  assert.deepEqual(fired, ['complete']);
 });
 
 test('geocoded Location branches forward the resolved-navigation ownership hook', () => {

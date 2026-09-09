@@ -131,6 +131,20 @@ export const GLOBE_VIEW = Object.freeze({
   durationS: 2.8,
 });
 
+/** High-altitude birds-eye over the current point — between street and full globe. */
+export const BIRDS_EYE_VIEW = Object.freeze({
+  heightM: 45000,
+  pitchDeg: -72,
+  durationS: 2.0,
+});
+
+/** Street / low-altitude framing — stays inside the shared street view-scale band. */
+export const STREET_VIEW = Object.freeze({
+  heightM: 900,
+  pitchDeg: -32,
+  durationS: 1.6,
+});
+
 /**
  * Fly straight out to the full-earth globe view, keeping the current sub-camera
  * point centered so the user's continent stays in front of them.
@@ -160,6 +174,62 @@ export function flyToGlobeView(viewer, options = {}) {
     cancel: options.onCancel,
   });
   return { latitude, longitude, heightM: GLOBE_VIEW.heightM };
+}
+
+/**
+ * Climb to a high-altitude birds-eye look at the current sub-camera point.
+ * Same Cesium flyTo contract as `flyToGlobeView` / `flyToStreetView`.
+ * @param {Cesium.Viewer} viewer
+ * @param {{duration?: number, onComplete?: Function, onCancel?: Function}} options
+ * @returns {{latitude: number, longitude: number, heightM: number}|null}
+ */
+export function flyToBirdsEyeView(viewer, options = {}) {
+  const carto = viewer?.camera?.positionCartographic;
+  if (!carto) return null;
+  const longitude = Cesium.Math.toDegrees(carto.longitude);
+  const latitude = Cesium.Math.toDegrees(carto.latitude);
+  viewer.camera.cancelFlight();
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, BIRDS_EYE_VIEW.heightM),
+    orientation: {
+      heading: viewer.camera.heading,
+      pitch: Cesium.Math.toRadians(BIRDS_EYE_VIEW.pitchDeg),
+      roll: 0,
+    },
+    duration: finitePositive(options.duration) || BIRDS_EYE_VIEW.durationS,
+    endTransform: Cesium.Matrix4.IDENTITY,
+    complete: options.onComplete,
+    cancel: options.onCancel,
+  });
+  return { latitude, longitude, heightM: BIRDS_EYE_VIEW.heightM };
+}
+
+/**
+ * Drop to a street / low-altitude look at the current sub-camera point.
+ * Uses the same flyTo contract as `flyToGlobeView` so reset and street share one path.
+ * @param {Cesium.Viewer} viewer
+ * @param {{duration?: number, onComplete?: Function, onCancel?: Function}} options
+ * @returns {{latitude: number, longitude: number, heightM: number}|null}
+ */
+export function flyToStreetView(viewer, options = {}) {
+  const carto = viewer?.camera?.positionCartographic;
+  if (!carto) return null;
+  const longitude = Cesium.Math.toDegrees(carto.longitude);
+  const latitude = Cesium.Math.toDegrees(carto.latitude);
+  viewer.camera.cancelFlight();
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, STREET_VIEW.heightM),
+    orientation: {
+      heading: viewer.camera.heading,
+      pitch: Cesium.Math.toRadians(STREET_VIEW.pitchDeg),
+      roll: 0,
+    },
+    duration: finitePositive(options.duration) || STREET_VIEW.durationS,
+    endTransform: Cesium.Matrix4.IDENTITY,
+    complete: options.onComplete,
+    cancel: options.onCancel,
+  });
+  return { latitude, longitude, heightM: STREET_VIEW.heightM };
 }
 
 /**

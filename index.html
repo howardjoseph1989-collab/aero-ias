@@ -44,18 +44,6 @@
     <span class="indicator-value" id="active-style-name">NORMAL</span>
   </div>
 
-  <!-- Top-center camera and share actions -->
-  <nav id="top-center-actions" aria-label="Globe actions">
-    <button id="clear-selected-layers" type="button" aria-label="Clear selected data layers" title="Turn off all selected data layers">
-      <span class="material-symbols-outlined" aria-hidden="true">layers_clear</span>
-    </button>
-    <button id="share-btn" type="button" aria-label="Copy share link" title="Copy share link">
-      <span class="share-icon" aria-hidden="true">&#x1F517;</span>
-    </button>
-    <button id="reset-globe-view" type="button" aria-label="Reset to full globe view" title="Reset camera and return to full globe view">
-      <span class="material-symbols-outlined" aria-hidden="true">public</span>
-    </button>
-  </nav>
   <div id="global-loading-status" role="status" aria-live="polite" aria-atomic="true" hidden>
     <span id="global-loading-label">LOADING LIVE DATA</span>
     <span id="global-loading-detail"></span>
@@ -486,8 +474,63 @@
   </div>
   <button id="clean-view-exit" title="Return UI controls">EXIT CLEAN VIEW</button>
 
-  <!-- Unified bottom command dock: locations, voice (injected at runtime), visual presets -->
-  <div id="command-dock" aria-label="Navigation, voice, and visual preset controls">
+  <aside id="map-nav-hud" aria-label="Map navigation">
+    <button id="map-nav-drag" type="button" aria-label="Drag navigation HUD" title="Drag to move this HUD">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
+    <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
+      <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+        <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+        <span>OUT</span>
+      </button>
+      <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        <span>IN</span>
+      </button>
+    </div>
+    <button id="map-nav-spin" type="button" aria-label="Orbit current view" title="360 orbit around the current look">
+      <span class="material-symbols-outlined" aria-hidden="true">360</span>
+      <span>360</span>
+    </button>
+    <button id="map-nav-north" type="button" aria-label="Reset north" title="Reset heading to north">
+      <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+      <span>NORTH</span>
+    </button>
+  </aside>
+
+  <!-- Unified bottom command dock: every map feature lives here -->
+  <div id="command-dock" aria-label="AERO IAS map controls">
+  <nav id="top-center-actions" aria-label="Quick views">
+    <button id="reset-globe-view" class="quick-view-chip" type="button" data-quick-view="global" aria-label="Reset to full globe view" title="Global — full world view">
+      <span class="material-symbols-outlined" aria-hidden="true">public</span>
+      <span>GLOBAL</span>
+    </button>
+    <button id="quick-view-birds-eye" class="quick-view-chip" type="button" data-quick-view="birds-eye" aria-label="Birds-eye view" title="Birds eye — high-altitude look at the current point">
+      <span class="material-symbols-outlined" aria-hidden="true">flight</span>
+      <span>BIRDS EYE</span>
+    </button>
+    <button id="quick-view-street" class="quick-view-chip" type="button" data-quick-view="street" aria-label="Street / low altitude view" title="Street — low-altitude look at the current point">
+      <span class="material-symbols-outlined" aria-hidden="true">add_road</span>
+      <span>STREET</span>
+    </button>
+  </nav>
+  <div id="map-action-dock" class="map-action-dock" role="group" aria-label="Map actions">
+    <button id="clear-selected-layers" type="button" aria-label="Clear selected data layers" title="Turn off all selected data layers">
+      <span class="material-symbols-outlined" aria-hidden="true">layers_clear</span>
+      <span>CLEAR</span>
+    </button>
+    <button id="share-btn" type="button" aria-label="Copy share link" title="Copy share link">
+      <span class="share-icon" aria-hidden="true">&#x1F517;</span>
+      <span>SHARE</span>
+    </button>
+  </div>
+  <section id="map-source-dock" class="map-source-section" aria-labelledby="map-source-label">
+    <div class="map-source-heading">
+      <span id="map-source-label">MAP SOURCE</span>
+      <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
+    </div>
+    <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
+  </section>
   <!-- Control panel -->
   <div id="control-panel" class="panel-collapsible collapsed">
     <div class="panel-glow"></div>
@@ -537,13 +580,6 @@
           <span class="btn-key">7</span>
         </button>
       </div>
-      <section class="map-source-section" aria-labelledby="map-source-label">
-        <div class="map-source-heading">
-          <span id="map-source-label">MAP SOURCE</span>
-          <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
-        </div>
-        <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
-      </section>
       </div>
       <div id="style-mini-status" class="panel-mini-status" aria-live="polite">
         <span class="panel-mini-label">Style</span>

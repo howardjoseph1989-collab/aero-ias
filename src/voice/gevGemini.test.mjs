@@ -1,11 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  audioInputDeviceIds,
   bytesToBase64,
+  countAudioInputDevices,
   downsampleToRate,
   encodeWavPcm16,
   floatTo16BitPcm,
   GevGeminiController,
+  isFatalMicrophoneError,
+  mapMicrophoneError,
+  microphoneConstraintLadder,
+  microphoneDeviceCheck,
+  microphonePreflight,
+  requestMicrophoneStream,
+  resolveAeroMicPrompt,
   rmsLevel,
   shouldCloseGeminiTurn,
 } from './gevGemini.js';
@@ -91,4 +100,142 @@ test('Gemini controller executes gevActions and posts tool results back', async 
   assert.equal(calls[1].toolResults[0].name, 'fly_to_location');
   assert.equal(calls[1].toolResults[0].response.ok, true);
   assert.ok(gevVoiceToolNames().includes('fly_to_location'));
+});
+
+test('microphone preflight names HTTPS and missing getUserMedia before capture', () => {
+  assert.deepEqual(microphonePreflight({ isSecureContext: false }), {
+    ok: false,
+    reason: 'insecure',
+    message: 'Microphone needs HTTPS — open AERO IAS over https:// or localhost',
+  });
+  assert.equal(microphonePreflight({ hasGetUserMedia: false }).reason, 'unsupported');
+  assert.equal(microphonePreflight().ok, true);
+});
+
+test('enumerateDevices with visible devices but zero audioinputs fails closed', () => {
+  assert.deepEqual(microphoneDeviceCheck([]), { ok: true, audioInputCount: 0, unknown: true });
+  assert.equal(microphoneDeviceCheck([{ kind: 'videoinput', deviceId: 'cam' }]).ok, false);
+  assert.equal(
+    microphoneDeviceCheck([{ kind: 'videoinput', deviceId: 'cam' }]).message,
+    'No microphone found — plug in a mic or allow access',
+  );
+  assert.equal(microphoneDeviceCheck([{ kind: 'audioinput', deviceId: 'mic-1' }]).audioInputCount, 1);
+  assert.equal(countAudioInputDevices([{ kind: 'audioinput' }, { kind: 'videoinput' }]), 1);
+  assert.deepEqual(audioInputDeviceIds([{ kind: 'audioinput', deviceId: 'mic-1' }]), ['mic-1']);
+});
+
+test('getUserMedia constraint ladder is ideal, then audio:true, then any device', () => {
+  const bare = microphoneConstraintLadder();
+  assert.deepEqual(bare[0], {
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      channelCount: 1,
+    },
+  });
+  assert.deepEqual(bare[1], { audio: true });
+  assert.deepEqual(bare.at(-1), { audio: {} });
+  const withDevice = microphoneConstraintLadder(['mic-9']);
+  assert.deepEqual(withDevice[2], { audio: { deviceId: { exact: 'mic-9' } } });
+  assert.deepEqual(withDevice[3], { audio: { deviceId: 'mic-9' } });
+});
+
+test('microphone errors map to actionable AERO MIC status text', () => {
+  assert.equal(
+    mapMicrophoneError({ name: 'NotFoundError' }),
+    'No microphone found — plug in a mic or allow access',
+  );
+  assert.equal(
+    mapMicrophoneError({ name: 'NotAllowedError' }),
+    'Microphone blocked — allow access in the browser, then tap AERO MIC',
+  );
+  assert.equal(
+    mapMicrophoneError({ name: 'NotReadableError' }),
+    'Microphone busy — close other apps using the mic, then try again',
+  );
+  assert.equal(
+    mapMicrophoneError({ name: 'SecurityError' }, { isSecureContext: false }),
+    'Microphone needs HTTPS — open AERO IAS over https:// or localhost',
+  );
+  assert.equal(isFatalMicrophoneError({ name: 'NotAllowedError' }), true);
+  assert.equal(isFatalMicrophoneError({ name: 'OverconstrainedError' }), false);
+});
+
+test('progressive getUserMedia skips OverconstrainedError and stops on NotAllowedError', async () => {
+  const attempts = [];
+  const media = {
+    getUserMedia: async (constraints) => {
+      attempts.push(constraints);
+      if (constraints.audio && constraints.audio !== true && constraints.audio.echoCancellation) {
+        const error = new Error('overconstrained');
+        error.name = 'OverconstrainedError';
+        throw error;
+      }
+      return { id: 'stream-ok', getTracks: () => [] };
+    },
+  };
+  const stream = await requestMicrophoneStream(media);
+  assert.equal(stream.id, 'stream-ok');
+  assert.equal(attempts.length, 2);
+  assert.deepEqual(attempts[1], { audio: true });
+
+  const denied = {
+    getUserMedia: async () => {
+      const error = new Error('blocked');
+      error.name = 'NotAllowedError';
+      throw error;
+    },
+  };
+  await assert.rejects(() => requestMicrophoneStream(denied), { name: 'NotAllowedError' });
+});
+
+test('AERO MIC prompt is Speak now, Listening, or Error', () => {
+  assert.deepEqual(resolveAeroMicPrompt({ status: 'listening' }), {
+    label: 'Speak now',
+    heading: 'SPEAK NOW',
+    detail: 'Speak now — pause to send',
+    prompt: 'speak',
+  });
+  assert.equal(resolveAeroMicPrompt({ status: 'listening', heardSpeech: true }).label, 'Listening');
+  assert.equal(resolveAeroMicPrompt({ status: 'error', detail: 'No microphone found — plug in a mic or allow access' }).label, 'Error');
+  assert.equal(resolveAeroMicPrompt({ status: 'idle' }).label, 'AERO MIC');
+});
+
+test('Gemini start enumerates devices, refuses insecure context, and surfaces mic errors', async () => {
+  const ui = {
+    root: { dataset: {} },
+    status: { textContent: '' },
+    detail: { textContent: '', title: '' },
+    errorDetail: { textContent: '' },
+    buttonLabel: { textContent: '' },
+    helpDetail: { textContent: '' },
+  };
+
+  const insecure = new GevGeminiController({
+    runner: async () => ({}),
+    ui,
+    isSecureContext: false,
+    mediaDevices: { getUserMedia: async () => ({}) },
+  });
+  await insecure.start();
+  assert.equal(insecure.status, 'error');
+  assert.match(ui.detail.textContent, /HTTPS/);
+  assert.equal(ui.buttonLabel.textContent, 'Error');
+  assert.equal(ui.root.dataset.micPrompt, 'error');
+
+  const noMic = new GevGeminiController({
+    runner: async () => ({}),
+    ui,
+    isSecureContext: true,
+    mediaDevices: {
+      enumerateDevices: async () => [{ kind: 'videoinput', deviceId: 'cam' }],
+      getUserMedia: async () => {
+        throw new Error('should not call getUserMedia');
+      },
+    },
+  });
+  await noMic.start();
+  assert.equal(noMic.status, 'error');
+  assert.match(ui.detail.textContent, /No microphone found/);
 });

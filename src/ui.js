@@ -12,7 +12,15 @@ import {
   clampBloomIntensity,
   decodeBloomIntensity,
 } from './bloom.js';
-import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToPresetLocation, flyToPOI, searchAndFlyTo } from './locations.js';
+import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToBirdsEyeView, flyToStreetView, flyToPresetLocation, flyToPOI, searchAndFlyTo } from './locations.js';
+import {
+  applyNaturalGlobeControls,
+  cameraZoomMovementM,
+  clampNavHudPosition,
+  defaultNavHudPosition,
+  MAP_NAV_HUD_STORAGE_KEY,
+  parseNavHudPosition,
+} from './quickViews.js';
 import { locationMiniStatus } from './locationStatus.js';
 import { interruptCameraMotion } from './cameraVerbs.js';
 import {
@@ -2627,6 +2635,9 @@ export class StyleManager {
     this._initShareButton();
     this._initClearSelectedLayersButton();
     this._initResetGlobeButton();
+    this._initQuickViews();
+    this._initMapZoomButtons();
+    this._initMapNavHud();
     this._initHUDToggle();
     this._initModels3dToggle();
     this._applyGlobalPostDefaults();
@@ -9634,6 +9645,184 @@ export class StyleManager {
     for (const button of [this._resetGlobeBtn, this._cockpitResetGlobeBtn]) {
       button?.addEventListener('click', this._globeResetHandler);
     }
+  }
+
+  /** Bottom-bar quick views — world, high-altitude birds-eye, and street. */
+  _initQuickViews() {
+    this._quickViewHandler = (event) => {
+      const button = event.currentTarget;
+      const view = button?.dataset?.quickView;
+      if (view === 'global') {
+        void this.resetToGlobeView();
+        return;
+      }
+      if (view === 'birds-eye') {
+        this._stampNavigation();
+        interruptCameraMotion('birds-eye-view');
+        this._stopOrbit();
+        this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        flyToBirdsEyeView(this.viewer);
+        return;
+      }
+      if (view === 'street') {
+        this._stampNavigation();
+        interruptCameraMotion('street-view');
+        this._stopOrbit();
+        this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        flyToStreetView(this.viewer);
+      }
+    };
+    document.querySelectorAll('#top-center-actions [data-quick-view]').forEach((button) => {
+      button.addEventListener('click', this._quickViewHandler);
+    });
+  }
+
+  /** Floating zoom buttons — same distance math as the voice zoom tool. */
+  _initMapZoomButtons() {
+    const zoom = (direction) => {
+      const camera = this.viewer?.camera;
+      if (!camera) return;
+      this._stampNavigation();
+      interruptCameraMotion('map-zoom');
+      const heightM = camera.positionCartographic?.height;
+      const movementM = cameraZoomMovementM({ direction, heightM, amount: 'medium' });
+      camera.cancelFlight?.();
+      if (direction === 'out') camera.zoomOut(movementM);
+      else camera.zoomIn(movementM);
+      this.viewer.scene?.requestRender?.();
+    };
+    document.getElementById('map-zoom-in')?.addEventListener('click', () => zoom('in'));
+    document.getElementById('map-zoom-out')?.addEventListener('click', () => zoom('out'));
+  }
+
+  /** Viewport-fixed nav HUD: drag to move; zoom / north / 360 stay on screen. */
+  _initMapNavHud() {
+    const hud = document.getElementById('map-nav-hud');
+    if (!hud) return;
+    this._mapNavHud = hud;
+    this._applyMapNavHudPosition(this._readMapNavHudPosition());
+    const persist = () => {
+      const next = clampNavHudPosition({
+        left: parseFloat(hud.style.left),
+        top: parseFloat(hud.style.top),
+        hudWidth: hud.offsetWidth,
+        hudHeight: hud.offsetHeight,
+        viewWidth: window.innerWidth,
+        viewHeight: window.innerHeight,
+      });
+      hud.style.left = `${next.left}px`;
+      hud.style.top = `${next.top}px`;
+      hud.style.right = 'auto';
+      hud.style.bottom = 'auto';
+      try {
+        localStorage.setItem(MAP_NAV_HUD_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Privacy modes can block storage; the HUD still stays on screen.
+      }
+    };
+    const onPointerMove = (event) => {
+      if (!this._mapNavHudDrag) return;
+      event.preventDefault();
+      this._applyMapNavHudPosition({
+        left: event.clientX - this._mapNavHudDrag.offsetX,
+        top: event.clientY - this._mapNavHudDrag.offsetY,
+      });
+    };
+    const onPointerUp = () => {
+      if (!this._mapNavHudDrag) return;
+      this._mapNavHudDrag = null;
+      hud.classList.remove('is-dragging');
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      persist();
+    };
+    const beginDrag = (event) => {
+      if (event.button != null && event.button !== 0) return;
+      if (event.target?.closest?.('button:not(#map-nav-drag)')) return;
+      event.preventDefault();
+      const rect = hud.getBoundingClientRect();
+      this._mapNavHudDrag = {
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top,
+      };
+      hud.classList.add('is-dragging');
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    };
+    hud.addEventListener('pointerdown', beginDrag);
+    window.addEventListener('resize', persist);
+    document.getElementById('map-nav-north')?.addEventListener('click', () => this._resetMapNorth());
+    document.getElementById('map-nav-spin')?.addEventListener('click', () => this._spinCurrentLook());
+  }
+
+  _readMapNavHudPosition() {
+    try {
+      const stored = parseNavHudPosition(JSON.parse(localStorage.getItem(MAP_NAV_HUD_STORAGE_KEY) || 'null'));
+      if (stored) return stored;
+    } catch {
+      // Fall through to the default corner.
+    }
+    return defaultNavHudPosition({
+      viewWidth: window.innerWidth,
+      viewHeight: window.innerHeight,
+      hudWidth: this._mapNavHud?.offsetWidth,
+      hudHeight: this._mapNavHud?.offsetHeight,
+    });
+  }
+
+  _applyMapNavHudPosition(position) {
+    const hud = this._mapNavHud;
+    if (!hud || !position) return;
+    const next = clampNavHudPosition({
+      ...position,
+      hudWidth: hud.offsetWidth || 88,
+      hudHeight: hud.offsetHeight || 260,
+      viewWidth: window.innerWidth,
+      viewHeight: window.innerHeight,
+    });
+    hud.style.left = `${next.left}px`;
+    hud.style.top = `${next.top}px`;
+    hud.style.right = 'auto';
+    hud.style.bottom = 'auto';
+  }
+
+  _resetMapNorth() {
+    const camera = this.viewer?.camera;
+    const carto = camera?.positionCartographic;
+    if (!camera || !carto) return;
+    this._stampNavigation();
+    interruptCameraMotion('reset-north');
+    this._stopOrbit();
+    camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    camera.cancelFlight?.();
+    camera.flyTo({
+      destination: Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, carto.height),
+      orientation: {
+        heading: 0,
+        pitch: camera.pitch,
+        roll: 0,
+      },
+      duration: 0.55,
+    });
+  }
+
+  _spinCurrentLook() {
+    const camera = this.viewer?.camera;
+    const carto = camera?.positionCartographic;
+    if (!camera || !carto || !this.orbitController) return;
+    this._stampNavigation();
+    interruptCameraMotion('map-spin');
+    if (this.orbitController.active) {
+      this._stopOrbit();
+      this._showToast('Orbit off');
+      return;
+    }
+    const target = Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, 0);
+    const radius = Math.max(240, carto.height);
+    const pitch = Cesium.Math.toDegrees(camera.pitch);
+    const isActive = this.orbitController.toggle(target, { radius, pitch });
+    this._orbitIndicator?.classList.toggle('active', isActive);
+    this._showToast(isActive ? 'Orbiting current view' : 'Orbit off');
   }
 
   /** Wire the top-center action that clears only manager-owned data layers. */

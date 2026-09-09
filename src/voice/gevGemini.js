@@ -128,6 +128,192 @@ export function shouldCloseGeminiTurn({
   return { close: false, reason: 'continue' };
 }
 
+export const IDEAL_AUDIO_CONSTRAINTS = Object.freeze({
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+  channelCount: 1,
+});
+
+const FATAL_MIC_ERRORS = new Set(['NotAllowedError', 'PermissionDeniedError', 'SecurityError']);
+const MISSING_MIC_ERRORS = new Set(['NotFoundError', 'DevicesNotFoundError']);
+const BUSY_MIC_ERRORS = new Set(['NotReadableError', 'TrackStartError', 'AbortError']);
+
+export function countAudioInputDevices(devices) {
+  if (!Array.isArray(devices)) return 0;
+  return devices.filter((device) => device && device.kind === 'audioinput').length;
+}
+
+export function audioInputDeviceIds(devices) {
+  if (!Array.isArray(devices)) return [];
+  return devices
+    .filter((device) => device && device.kind === 'audioinput' && device.deviceId)
+    .map((device) => device.deviceId);
+}
+
+export function microphonePreflight({ isSecureContext = true, hasGetUserMedia = true } = {}) {
+  if (isSecureContext === false) {
+    return {
+      ok: false,
+      reason: 'insecure',
+      message: 'Microphone needs HTTPS — open AERO IAS over https:// or localhost',
+    };
+  }
+  if (!hasGetUserMedia) {
+    return {
+      ok: false,
+      reason: 'unsupported',
+      message: 'Microphone support unavailable — use a modern browser over HTTPS',
+    };
+  }
+  return { ok: true };
+}
+
+export function microphoneDeviceCheck(devices) {
+  if (!Array.isArray(devices) || devices.length === 0) {
+    return { ok: true, audioInputCount: 0, unknown: true };
+  }
+  const audioInputCount = countAudioInputDevices(devices);
+  if (audioInputCount === 0) {
+    return {
+      ok: false,
+      reason: 'no-mic',
+      audioInputCount: 0,
+      message: 'No microphone found — plug in a mic or allow access',
+    };
+  }
+  return { ok: true, audioInputCount };
+}
+
+export function mapMicrophoneError(error, {
+  isSecureContext = true,
+  audioInputCount = null,
+} = {}) {
+  if (isSecureContext === false) {
+    return 'Microphone needs HTTPS — open AERO IAS over https:// or localhost';
+  }
+  const name = String(error?.name || '');
+  if (MISSING_MIC_ERRORS.has(name) || audioInputCount === 0) {
+    return 'No microphone found — plug in a mic or allow access';
+  }
+  if (FATAL_MIC_ERRORS.has(name)) {
+    return 'Microphone blocked — allow access in the browser, then tap AERO MIC';
+  }
+  if (BUSY_MIC_ERRORS.has(name)) {
+    return 'Microphone busy — close other apps using the mic, then try again';
+  }
+  if (name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError') {
+    return 'Microphone rejected settings — try again or use a different mic';
+  }
+  return error?.message || 'Microphone unavailable';
+}
+
+export function isFatalMicrophoneError(error) {
+  return FATAL_MIC_ERRORS.has(String(error?.name || ''));
+}
+
+export function microphoneConstraintLadder(deviceIds = []) {
+  const ids = Array.isArray(deviceIds) ? deviceIds.filter(Boolean) : [];
+  const steps = [
+    { audio: { ...IDEAL_AUDIO_CONSTRAINTS } },
+    { audio: true },
+  ];
+  for (const id of ids) {
+    steps.push({ audio: { deviceId: { exact: id } } });
+  }
+  if (ids.length) steps.push({ audio: { deviceId: ids[0] } });
+  steps.push({ audio: {} });
+  return steps;
+}
+
+export async function requestMicrophoneStream(mediaDevices, { deviceIds = [] } = {}) {
+  if (!mediaDevices?.getUserMedia) {
+    const error = new Error('Microphone support unavailable');
+    error.name = 'NotSupportedError';
+    throw error;
+  }
+  let lastError;
+  for (const constraints of microphoneConstraintLadder(deviceIds)) {
+    try {
+      return await mediaDevices.getUserMedia(constraints);
+    } catch (error) {
+      lastError = error;
+      if (isFatalMicrophoneError(error)) throw error;
+    }
+  }
+  throw lastError || new Error('Microphone unavailable');
+}
+
+export function resolveAeroMicPrompt({
+  status = 'idle',
+  heardSpeech = false,
+  pushToTalk = false,
+  pushToTalkKeyHeld = false,
+  detail,
+} = {}) {
+  if (status === 'error') {
+    return {
+      label: 'Error',
+      heading: 'ERROR',
+      detail: detail || 'VOICE UNAVAILABLE',
+      prompt: 'error',
+    };
+  }
+  if (status === 'connecting') {
+    return {
+      label: 'AERO MIC',
+      heading: 'CONNECTING',
+      detail: detail || 'Requesting microphone',
+      prompt: 'connecting',
+    };
+  }
+  if (status === 'executing') {
+    return {
+      label: 'AERO MIC',
+      heading: 'EXECUTING',
+      detail: detail || 'Sending Gemini turn',
+      prompt: 'executing',
+    };
+  }
+  if (status === 'listening') {
+    if (pushToTalk) {
+      return pushToTalkKeyHeld
+        ? {
+          label: 'Listening',
+          heading: 'LISTENING',
+          detail: detail || 'Release Space to send',
+          prompt: 'listening',
+        }
+        : {
+          label: 'Speak now',
+          heading: 'SPEAK NOW',
+          detail: detail || 'Hold Space to talk',
+          prompt: 'speak',
+        };
+    }
+    if (heardSpeech) {
+      return {
+        label: 'Listening',
+        heading: 'LISTENING',
+        detail: detail || 'Listening — pause to send',
+        prompt: 'listening',
+      };
+    }
+    return {
+      label: 'Speak now',
+      heading: 'SPEAK NOW',
+      detail: detail || 'Speak now — pause to send',
+      prompt: 'speak',
+    };
+  }
+  return {
+    label: 'AERO MIC',
+    heading: 'OFF',
+    detail: detail || 'GEMINI STANDBY',
+    prompt: 'idle',
+  };
+}
+
 function playBrowserSpeech(text) {
   const spoken = String(text || '').trim();
   if (!spoken || typeof speechSynthesis === 'undefined') return Promise.resolve(false);
@@ -171,12 +357,22 @@ async function playBase64Audio(audio, mimeType) {
 }
 
 export class GevGeminiController {
-  constructor({ runner, ui, radioLayer = null, dataManager = null, fetchImpl = null } = {}) {
+  constructor({
+    runner,
+    ui,
+    radioLayer = null,
+    dataManager = null,
+    fetchImpl = null,
+    mediaDevices = null,
+    isSecureContext = null,
+  } = {}) {
     this.runner = runner;
     this.ui = ui;
     this.radioLayer = radioLayer;
     this.dataManager = dataManager;
     this.fetchImpl = fetchImpl || globalThis.fetch?.bind(globalThis);
+    this.mediaDevices = mediaDevices;
+    this.secureContextOverride = isSecureContext;
     this.status = 'idle';
     this.history = [];
     this.startEpoch = 0;
@@ -201,26 +397,42 @@ export class GevGeminiController {
     return this.status !== 'idle' && this.status !== 'error';
   }
 
+  resolveMediaDevices() {
+    return this.mediaDevices || globalThis.navigator?.mediaDevices || null;
+  }
+
+  resolveSecureContext() {
+    if (this.secureContextOverride != null) return this.secureContextOverride;
+    return globalThis.isSecureContext !== false;
+  }
+
   setStatus(status, detail) {
     this.status = status;
-    if (this.ui?.root) this.ui.root.dataset.status = status;
-    if (this.ui?.status) this.ui.status.textContent = STATUS[status] || STATUS.idle;
-    const resolved = status === 'listening' && this.pushToTalkMode
-      ? (this.pushToTalkKeyHeld ? 'Release Space to send' : 'Hold Space to talk')
-      : detail;
+    const prompt = resolveAeroMicPrompt({
+      status,
+      heardSpeech: this.heardSpeech,
+      pushToTalk: this.pushToTalkMode,
+      pushToTalkKeyHeld: this.pushToTalkKeyHeld,
+      detail,
+    });
+    if (this.ui?.root) {
+      this.ui.root.dataset.status = status;
+      this.ui.root.dataset.micPrompt = prompt.prompt;
+    }
+    if (this.ui?.status) this.ui.status.textContent = prompt.heading || STATUS[status] || STATUS.idle;
     const primary = status === 'error'
-      ? 'VOICE UNAVAILABLE'
-      : (resolved || (status === 'idle' ? 'GEMINI STANDBY' : 'GEMINI ACTIVE'));
+      ? (prompt.detail || 'VOICE UNAVAILABLE')
+      : prompt.detail;
     if (this.ui?.detail) {
       this.ui.detail.textContent = primary;
       this.ui.detail.title = primary;
     }
     if (this.ui?.errorDetail) {
       this.ui.errorDetail.textContent = status === 'error'
-        ? (resolved || 'Gemini voice session could not be started.')
+        ? (detail || prompt.detail || 'Gemini voice session could not be started.')
         : '';
     }
-    if (this.ui?.buttonLabel) this.ui.buttonLabel.textContent = 'AERO MIC';
+    if (this.ui?.buttonLabel) this.ui.buttonLabel.textContent = prompt.label;
     if (this.ui?.helpDetail) {
       this.ui.helpDetail.textContent = this.pushToTalkMode
         ? (this.pushToTalkKeyHeld
@@ -255,19 +467,37 @@ export class GevGeminiController {
     this.pushToTalkMode = pushToTalk;
     this.pushToTalkKeyHeld = pushToTalk;
     this.history = [];
+    this.heardSpeech = false;
     this.setStatus('connecting', 'Requesting microphone');
-    if (!navigator.mediaDevices?.getUserMedia) {
-      this.setStatus('error', 'Microphone support unavailable');
+
+    const media = this.resolveMediaDevices();
+    const secure = this.resolveSecureContext();
+    const preflight = microphonePreflight({
+      isSecureContext: secure,
+      hasGetUserMedia: Boolean(media?.getUserMedia),
+    });
+    if (!preflight.ok) {
+      this.setStatus('error', preflight.message);
       return;
     }
+
+    let devices = [];
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: 1,
-        },
+      devices = await media.enumerateDevices();
+    } catch {
+      devices = [];
+    }
+    if (epoch !== this.startEpoch) return;
+
+    const deviceCheck = microphoneDeviceCheck(devices);
+    if (!deviceCheck.ok) {
+      this.setStatus('error', deviceCheck.message);
+      return;
+    }
+
+    try {
+      this.stream = await requestMicrophoneStream(media, {
+        deviceIds: audioInputDeviceIds(devices),
       });
       if (epoch !== this.startEpoch) {
         this.stream.getTracks().forEach((track) => track.stop());
@@ -277,9 +507,12 @@ export class GevGeminiController {
       this.setMicrophoneEnabled(!pushToTalk || this.pushToTalkKeyHeld);
       await this.beginCapture();
       if (epoch !== this.startEpoch) return;
-      this.setStatus('listening', pushToTalk ? 'Hold Space to talk' : 'Listening — pause to send');
+      this.setStatus('listening');
     } catch (error) {
-      this.setStatus('error', error?.message || 'Microphone permission denied');
+      this.setStatus('error', mapMicrophoneError(error, {
+        isSecureContext: secure,
+        audioInputCount: countAudioInputDevices(devices),
+      }));
     }
   }
 
@@ -322,8 +555,10 @@ export class GevGeminiController {
       this.chunks.push(new Float32Array(input));
       const level = rmsLevel(input);
       if (level >= SPEECH_RMS) {
+        const firstSpeech = !this.heardSpeech;
         this.heardSpeech = true;
         this.silentMs = 0;
+        if (firstSpeech && this.status === 'listening') this.setStatus('listening');
       } else if (this.heardSpeech) {
         this.silentMs += (input.length / this.inputRate) * 1000;
       }
@@ -376,7 +611,7 @@ export class GevGeminiController {
     this.silentMs = 0;
     this.recordingStartedAt = performance.now();
     if (samples.length < this.inputRate * 0.25) {
-      this.setStatus('listening', this.pushToTalkMode ? 'Hold Space to talk' : 'Listening — pause to send');
+      this.setStatus('listening');
       return;
     }
     const downsampled = downsampleToRate(samples, this.inputRate, TARGET_RATE);
@@ -435,7 +670,7 @@ export class GevGeminiController {
         if (!played) await playBrowserSpeech(payload.text);
       }
       if (epoch !== this.startEpoch) return;
-      this.setStatus('listening', this.pushToTalkMode ? 'Hold Space to talk' : 'Listening — pause to send');
+      this.setStatus('listening');
     } catch (error) {
       if (epoch !== this.startEpoch) return;
       this.setStatus('error', error?.message || 'Gemini turn failed');

@@ -14,11 +14,21 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 - Product display name is now **AERO IAS** (all caps, space, no hyphen).
   User-facing titles, UI chrome, Pinokio metadata, and package description
   use that exact string. See [NOTICE](NOTICE) for upstream attribution.
-- Map-view chrome moved to the **top and bottom edges** so the globe center
-  stays visible. Side trays collapse into top chips; the command dock stays
-  at the bottom with a much larger high-contrast **AERO MIC** control.
-  Layers, map sources, dock trays, Gemini + OpenAI, and the 28 voice tools
-  are unchanged. Cockpit still uses the original left-lane instruments.
+- Map-view chrome is a **white glass bottom bar**: transparent panels, white
+  outlines, and large white labels so controls stay readable on the dark globe.
+  DATA LAYERS and every other feature sit on that bottom edge — no left/right
+  side stacks. Exactly three quick views live on the bar: **GLOBAL**,
+  **BIRDS EYE**, and **STREET** (world / 45 km birds-eye / street-level).
+  A floating **map navigation HUD** (Zoom In/Out, 360 orbit, reset-north)
+  can be dragged around the viewport and stays on screen while zooming.
+  **AERO MIC** stays the largest dock control (white idle, cyan/green
+  listening, red error; label text stays white). Layers, Gemini + OpenAI, and
+  the 28 voice tools are unchanged. Cockpit still uses the original left-lane
+  instruments.
+- Gemini microphone start now tries progressive `getUserMedia` constraints
+  (ideal → `audio:true` → any device), checks `enumerateDevices` and HTTPS,
+  and maps `NotFoundError` / `NotAllowedError` / `NotReadableError` to clear
+  AERO MIC status text (`Speak now` / `Listening` / `Error`).
 
 ### Fixed
 

@@ -34,6 +34,7 @@ import { installScopeMask } from './scopeMask.js';
 import { initFirstRunExperience } from './firstRunExperience.js';
 import { initKeySetup } from './keySetup.js';
 import { loadPhotorealisticTileset } from './mapStartup.js';
+import { applyNaturalGlobeControls } from './quickViews.js';
 
 initLogoGaze();
 
@@ -132,6 +133,7 @@ async function init() {
     // 2026-08-05 perf investigation as a strict halving of idle burn on
     // 120 Hz hardware; a no-op on 60 Hz displays. (perf item 2)
     viewer.targetFrameRate = 60;
+    applyNaturalGlobeControls(viewer.scene.screenSpaceCameraController);
 
     // Register per-layer data attribution into the "Data attribution" popover.
     // Required by each source's license (ODbL, CC BY-NC-SA, NASA FIRMS, etc.);
