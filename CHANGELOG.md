@@ -7,6 +7,10 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 
 ### Changed
 
+- Gemini voice+tools now defaults to **Gemini 3.6 Flash** (`gemini-3.6-flash`).
+  Override with `GEMINI_VOICE_MODEL`. Spoken replies still use a dedicated TTS
+  model (`gemini-2.5-flash-preview-tts` via `GEMINI_TTS_MODEL`) because
+  Gemini 3.6 Flash does not support audio generation.
 - Product display name is now **AERO IAS** (all caps, space, no hyphen).
   User-facing titles, UI chrome, Pinokio metadata, and package description
   use that exact string. See [NOTICE](NOTICE) for upstream attribution.
