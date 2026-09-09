@@ -233,6 +233,36 @@ export function flyToStreetView(viewer, options = {}) {
 }
 
 /**
+ * Fly to an explicit WGS84 coordinate using the same street-band framing as
+ * the Street quick view. Used by the toolbar "My Location" control.
+ *
+ * @param {Cesium.Viewer} viewer
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {{duration?: number, onComplete?: Function, onCancel?: Function}} [options]
+ * @returns {{latitude: number, longitude: number, heightM: number}|null}
+ */
+export function flyToLatLon(viewer, latitude, longitude, options = {}) {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  if (!viewer?.camera || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  viewer.camera.cancelFlight();
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(lon, lat, STREET_VIEW.heightM),
+    orientation: {
+      heading: 0,
+      pitch: Cesium.Math.toRadians(STREET_VIEW.pitchDeg),
+      roll: 0,
+    },
+    duration: finitePositive(options.duration) || STREET_VIEW.durationS,
+    endTransform: Cesium.Matrix4.IDENTITY,
+    complete: options.onComplete,
+    cancel: options.onCancel,
+  });
+  return { latitude: lat, longitude: lon, heightM: STREET_VIEW.heightM };
+}
+
+/**
  * Flat list of locations for backward compatibility.
  */
 export const LOCATIONS = Object.entries(CITY_POIS).map(([id, city]) => ({

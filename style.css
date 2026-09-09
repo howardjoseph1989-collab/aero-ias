@@ -3855,10 +3855,20 @@ body.cockpit-mode #view-switcher button {
 .cockpit-help span { color: var(--cockpit-accent); }
 body.cockpit-mode :is(
   #title-bar, #style-indicator, #top-center-actions, #traffic-sync-chip, #cctv-sync-chip,
-  #command-dock, #map-nav-hud,
+  #map-nav-hud,
   #military-awareness-panel, #military-awareness-direction-overlay,
   #cockpit-entry
 ) { display: none !important; }
+body.cockpit-mode #map-chrome,
+body.cockpit-mode #command-dock {
+  display: contents;
+}
+body.cockpit-mode #command-dock > .chrome-module:not(#left-panel-stack) {
+  display: none !important;
+}
+body.cockpit-mode .chrome-module-handle {
+  display: none !important;
+}
 body.cockpit-mode :is(#clear-selected-layers, #share-btn, #reset-globe-view) {
   display: none !important;
 }
@@ -10125,12 +10135,16 @@ body:not(.cockpit-mode) {
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
 }
 
-#command-dock > #top-center-actions { order: 1; }
-#command-dock > #gev-voice-control { order: 2; }
-#command-dock > #map-source-dock { order: 3; }
-#command-dock > #map-action-dock { order: 4; }
-#command-dock > #location-bar { order: 5; }
-#command-dock > #control-panel { order: 6; }
+#command-dock > [data-chrome-module="search"] { order: 1; }
+#command-dock > #top-center-actions { order: 2; }
+#command-dock > #left-panel-stack { order: 3; }
+#command-dock > #right-context-rail { order: 4; }
+#command-dock > #map-source-dock { order: 5; }
+#command-dock > #map-action-dock { order: 6; }
+#command-dock > #location-bar { order: 7; }
+#command-dock > #control-panel { order: 8; }
+#command-dock > #map-nav-hud { order: 9; }
+#command-dock > #gev-voice-control { order: 10; }
 
 #top-center-actions .quick-view-chip,
 #map-zoom-controls button,
@@ -10336,4 +10350,285 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-l
 #map-nav-hud button:focus-visible {
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════
+   Bottom toolbar — one screen-fixed strip of floatable modules.
+   No transform on the overlay (would reparent position:fixed).
+   Modules start docked; dragging floats them in the viewport.
+   ═══════════════════════════════════════════════ */
+
+#map-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 145;
+  pointer-events: none;
+}
+
+#map-chrome > *,
+#command-dock,
+#command-dock > .chrome-module,
+#command-dock > #gev-voice-control {
+  pointer-events: auto;
+}
+
+#command-dock,
+#command-dock:has(#location-bar:not(.collapsed)),
+#command-dock:has(#control-panel:not(.collapsed)) {
+  left: max(8px, env(safe-area-inset-left, 0px));
+  right: max(8px, env(safe-area-inset-right, 0px));
+  width: auto;
+  max-width: none;
+  transform: none;
+}
+
+#command-dock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px;
+  overflow: visible;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  border-radius: 16px;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.chrome-module {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 4px;
+  color: #ffffff;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  pointer-events: auto;
+}
+
+.chrome-module-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-width: 28px;
+  min-height: 36px;
+  padding: 0;
+  color: #ffffff;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.chrome-module-handle:hover,
+.chrome-module-handle:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.chrome-module.is-dragging .chrome-module-handle,
+.chrome-module-handle:active {
+  cursor: grabbing;
+}
+
+.chrome-module.is-floating,
+#map-chrome > .chrome-module.is-floating,
+#top-center-actions.chrome-module.is-floating,
+#map-nav-hud.chrome-module.is-floating,
+#left-panel-stack.chrome-module.is-floating,
+#gev-voice-control.chrome-module.is-floating,
+#location-bar.chrome-module.is-floating,
+#control-panel.chrome-module.is-floating,
+#map-source-dock.chrome-module.is-floating,
+#map-action-dock.chrome-module.is-floating {
+  position: fixed;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  z-index: 160;
+  max-width: min(92vw, 520px);
+  transform: none;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.chrome-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: min(220px, 42vw);
+}
+
+.chrome-search-label {
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#command-dock #location-search,
+#command-dock #location-search.expanded,
+.chrome-search-row #location-search {
+  width: min(220px, 36vw);
+  min-width: 140px;
+  min-height: 44px;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 14px;
+  background: rgba(6, 12, 18, 0.35);
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+}
+
+#my-location-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 88px;
+  min-height: 56px;
+  padding: 6px 10px;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#my-location-btn .material-symbols-outlined {
+  color: #ffffff;
+  font-size: 22px;
+}
+
+#my-location-btn:hover,
+#my-location-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#command-dock > #top-center-actions {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: auto;
+  display: flex;
+  transform: none;
+  max-width: none;
+}
+
+#command-dock > #top-center-actions .quick-view-chip {
+  min-width: 72px;
+  min-height: 56px;
+  font-size: 12px;
+}
+
+body:not(.cockpit-mode) #left-panel-stack,
+body:not(.cockpit-mode) #right-context-rail {
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: auto;
+  width: auto;
+  max-width: min(46vw, 420px);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  pointer-events: auto;
+}
+
+/* height/max-height stay off the modelled rail own-box selector. */
+body:not(.cockpit-mode) #left-panel-stack {
+  height: auto;
+  max-height: none;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed,
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed {
+  position: relative;
+  width: auto;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > #data-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #scene-panel:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) {
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+}
+
+#command-dock > #map-nav-hud,
+#map-nav-hud.chrome-module:not(.is-floating) {
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
+  bottom: auto;
+  z-index: auto;
+  flex-direction: row;
+  padding: 6px;
+  touch-action: manipulation;
+}
+
+#command-dock > #map-nav-hud #map-zoom-controls,
+#map-nav-hud.chrome-module:not(.is-floating) #map-zoom-controls {
+  flex-direction: row;
+}
+
+#command-dock > #gev-voice-control {
+  position: relative;
+  inset: auto;
+  margin: 0;
+  min-height: 0;
+  height: auto;
+}
+
+#command-dock > #location-bar,
+#command-dock > #control-panel,
+#command-dock > #map-source-dock {
+  position: relative;
+  inset: auto;
+  width: auto;
+  transform: none;
+  flex: 0 1 auto;
+}
+
+body.ui-clean-view #map-chrome,
+body.recording-mode #map-chrome {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  #command-dock {
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: auto;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .chrome-search-row #location-search {
+    width: min(160px, 48vw);
+    min-width: 110px;
+  }
 }

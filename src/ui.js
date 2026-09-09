@@ -12,15 +12,18 @@ import {
   clampBloomIntensity,
   decodeBloomIntensity,
 } from './bloom.js';
-import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToBirdsEyeView, flyToStreetView, flyToPresetLocation, flyToPOI, searchAndFlyTo } from './locations.js';
+import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToBirdsEyeView, flyToStreetView, flyToPresetLocation, flyToPOI, flyToLatLon, searchAndFlyTo } from './locations.js';
 import {
   applyNaturalGlobeControls,
   cameraZoomMovementM,
-  clampNavHudPosition,
-  defaultNavHudPosition,
-  MAP_NAV_HUD_STORAGE_KEY,
-  parseNavHudPosition,
 } from './quickViews.js';
+import {
+  clampChromeModulePosition,
+  isChromeModuleFloating,
+  parseChromeModulePosition,
+  readChromeModuleLayout,
+  writeChromeModuleLayout,
+} from './chromeModules.js';
 import { locationMiniStatus } from './locationStatus.js';
 import { interruptCameraMotion } from './cameraVerbs.js';
 import {
@@ -2638,6 +2641,8 @@ export class StyleManager {
     this._initQuickViews();
     this._initMapZoomButtons();
     this._initMapNavHud();
+    this._initChromeModules();
+    this._initMyLocationButton();
     this._initHUDToggle();
     this._initModels3dToggle();
     this._applyGlobalPostDefaults();
@@ -9316,12 +9321,9 @@ export class StyleManager {
     };
     document.addEventListener('keydown', this._poiKeydownHandler);
 
-    // Search toggle (expand/collapse)
+    // Search is always visible in the bottom toolbar; the magnifier focuses it.
     this._searchToggle.addEventListener('click', () => {
-      this._locationSearch.classList.toggle('expanded');
-      if (this._locationSearch.classList.contains('expanded')) {
-        this._locationSearch.focus();
-      }
+      this._locationSearch?.focus();
     });
 
     // Search submit on Enter
@@ -9695,95 +9697,170 @@ export class StyleManager {
     document.getElementById('map-zoom-out')?.addEventListener('click', () => zoom('out'));
   }
 
-  /** Viewport-fixed nav HUD: drag to move; zoom / north / 360 stay on screen. */
+  /** Zoom / north / 360 stay on the nav module; dragging is owned by chrome modules. */
   _initMapNavHud() {
-    const hud = document.getElementById('map-nav-hud');
-    if (!hud) return;
-    this._mapNavHud = hud;
-    this._applyMapNavHudPosition(this._readMapNavHudPosition());
-    const persist = () => {
-      const next = clampNavHudPosition({
-        left: parseFloat(hud.style.left),
-        top: parseFloat(hud.style.top),
-        hudWidth: hud.offsetWidth,
-        hudHeight: hud.offsetHeight,
-        viewWidth: window.innerWidth,
-        viewHeight: window.innerHeight,
-      });
-      hud.style.left = `${next.left}px`;
-      hud.style.top = `${next.top}px`;
-      hud.style.right = 'auto';
-      hud.style.bottom = 'auto';
-      try {
-        localStorage.setItem(MAP_NAV_HUD_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Privacy modes can block storage; the HUD still stays on screen.
-      }
-    };
-    const onPointerMove = (event) => {
-      if (!this._mapNavHudDrag) return;
-      event.preventDefault();
-      this._applyMapNavHudPosition({
-        left: event.clientX - this._mapNavHudDrag.offsetX,
-        top: event.clientY - this._mapNavHudDrag.offsetY,
-      });
-    };
-    const onPointerUp = () => {
-      if (!this._mapNavHudDrag) return;
-      this._mapNavHudDrag = null;
-      hud.classList.remove('is-dragging');
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      persist();
-    };
-    const beginDrag = (event) => {
-      if (event.button != null && event.button !== 0) return;
-      if (event.target?.closest?.('button:not(#map-nav-drag)')) return;
-      event.preventDefault();
-      const rect = hud.getBoundingClientRect();
-      this._mapNavHudDrag = {
-        offsetX: event.clientX - rect.left,
-        offsetY: event.clientY - rect.top,
-      };
-      hud.classList.add('is-dragging');
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-    };
-    hud.addEventListener('pointerdown', beginDrag);
-    window.addEventListener('resize', persist);
+    this._mapNavHud = document.getElementById('map-nav-hud');
     document.getElementById('map-nav-north')?.addEventListener('click', () => this._resetMapNorth());
     document.getElementById('map-nav-spin')?.addEventListener('click', () => this._spinCurrentLook());
   }
 
-  _readMapNavHudPosition() {
-    try {
-      const stored = parseNavHudPosition(JSON.parse(localStorage.getItem(MAP_NAV_HUD_STORAGE_KEY) || 'null'));
-      if (stored) return stored;
-    } catch {
-      // Fall through to the default corner.
+  /**
+   * Makes every bottom-toolbar group draggable. Docked modules stay in the
+   * wrapping bar; a drag floats them with position:fixed and clamps them
+   * inside the viewport so map zoom/pan cannot send them off-screen.
+   * @returns {void}
+   */
+  _initChromeModules() {
+    const dock = document.getElementById('command-dock');
+    if (!dock) return;
+    this._chromeLayout = readChromeModuleLayout();
+    this._chromeModuleDrags = new Map();
+    this._bindChromeModule(dock.querySelector('[data-chrome-module="mic"]') || document.getElementById('gev-voice-control'));
+    dock.querySelectorAll('[data-chrome-module]').forEach((module) => this._bindChromeModule(module));
+    this._chromeModuleObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node.nodeType !== 1) continue;
+          if (node.matches?.('[data-chrome-module], #gev-voice-control')) this._bindChromeModule(node);
+          node.querySelectorAll?.('[data-chrome-module]').forEach((child) => this._bindChromeModule(child));
+        }
+      }
+    });
+    this._chromeModuleObserver.observe(dock, { childList: true, subtree: false });
+    this._chromeModuleResizeHandler = () => this._reclampChromeModules();
+    window.addEventListener('resize', this._chromeModuleResizeHandler);
+    this._reclampChromeModules();
+  }
+
+  _bindChromeModule(module) {
+    if (!module || module.dataset.chromeBound === '1') return;
+    const id = module.dataset.chromeModule || (module.id === 'gev-voice-control' ? 'mic' : '');
+    if (!id) return;
+    module.dataset.chromeModule = id;
+    module.classList.add('chrome-module');
+    module.dataset.chromeBound = '1';
+    if (!module.querySelector(':scope > .chrome-module-handle')) {
+      const handle = document.createElement('button');
+      handle.type = 'button';
+      handle.className = 'chrome-module-handle';
+      handle.setAttribute('aria-label', `Move ${id} group`);
+      handle.title = 'Drag to move this group';
+      handle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>';
+      module.insertBefore(handle, module.firstChild);
     }
-    return defaultNavHudPosition({
+    const stored = this._chromeLayout?.[id];
+    if (isChromeModuleFloating(stored)) this._floatChromeModule(module, stored);
+    const handle = module.querySelector(':scope > .chrome-module-handle');
+    const beginDrag = (event) => {
+      if (event.button != null && event.button !== 0) return;
+      if (event.target?.closest?.('button:not(.chrome-module-handle)')) return;
+      if (!event.target?.closest?.('.chrome-module-handle')) return;
+      event.preventDefault();
+      const rect = module.getBoundingClientRect();
+      this._chromeModuleDrags.set(id, {
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top,
+      });
+      this._floatChromeModule(module, { left: rect.left, top: rect.top });
+      module.classList.add('is-dragging');
+      const onPointerMove = (moveEvent) => {
+        const drag = this._chromeModuleDrags.get(id);
+        if (!drag) return;
+        moveEvent.preventDefault();
+        this._floatChromeModule(module, {
+          left: moveEvent.clientX - drag.offsetX,
+          top: moveEvent.clientY - drag.offsetY,
+        });
+      };
+      const onPointerUp = () => {
+        this._chromeModuleDrags.delete(id);
+        module.classList.remove('is-dragging');
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        const next = parseChromeModulePosition({
+          left: parseFloat(module.style.left),
+          top: parseFloat(module.style.top),
+        });
+        if (!next) return;
+        this._chromeLayout = { ...this._chromeLayout, [id]: next };
+        writeChromeModuleLayout(this._chromeLayout);
+      };
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    };
+    handle.addEventListener('pointerdown', beginDrag);
+  }
+
+  _floatChromeModule(module, position) {
+    if (!module || !position) return;
+    const host = document.getElementById('map-chrome');
+    if (host && module.parentElement !== host) host.appendChild(module);
+    const next = clampChromeModulePosition({
+      ...position,
+      hudWidth: module.offsetWidth || 160,
+      hudHeight: module.offsetHeight || 72,
       viewWidth: window.innerWidth,
       viewHeight: window.innerHeight,
-      hudWidth: this._mapNavHud?.offsetWidth,
-      hudHeight: this._mapNavHud?.offsetHeight,
+    });
+    module.classList.add('is-floating');
+    module.style.left = `${next.left}px`;
+    module.style.top = `${next.top}px`;
+    module.style.right = 'auto';
+    module.style.bottom = 'auto';
+    module.style.transform = 'none';
+    return next;
+  }
+
+  _reclampChromeModules() {
+    document.querySelectorAll('.chrome-module.is-floating[data-chrome-module]').forEach((module) => {
+      this._floatChromeModule(module, {
+        left: parseFloat(module.style.left),
+        top: parseFloat(module.style.top),
+      });
     });
   }
 
-  _applyMapNavHudPosition(position) {
-    const hud = this._mapNavHud;
-    if (!hud || !position) return;
-    const next = clampNavHudPosition({
-      ...position,
-      hudWidth: hud.offsetWidth || 88,
-      hudHeight: hud.offsetHeight || 260,
-      viewWidth: window.innerWidth,
-      viewHeight: window.innerHeight,
-    });
-    hud.style.left = `${next.left}px`;
-    hud.style.top = `${next.top}px`;
-    hud.style.right = 'auto';
-    hud.style.bottom = 'auto';
+  _initMyLocationButton() {
+    const button = document.getElementById('my-location-btn');
+    if (!button) return;
+    button.addEventListener('click', () => this._flyToMyLocation());
+  }
+
+  _flyToMyLocation() {
+    if (!navigator.geolocation) {
+      this._showToast('Location is not available in this browser');
+      return;
+    }
+    const button = document.getElementById('my-location-btn');
+    button?.setAttribute('aria-busy', 'true');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        button?.removeAttribute('aria-busy');
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          this._showToast('Could not read your location');
+          return;
+        }
+        this._stampNavigation();
+        interruptCameraMotion('my-location');
+        this._stopOrbit();
+        this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        flyToLatLon(this.viewer, latitude, longitude);
+        this._searchedLocationLabel = 'My location';
+        this._setActiveLocation(null);
+        this._currentPoi = null;
+        this._collapsePOIRow();
+        this._updateLocationMiniStatus();
+        this._showToast('Flying to your location');
+      },
+      (error) => {
+        button?.removeAttribute('aria-busy');
+        const denied = error?.code === 1;
+        this._showToast(denied ? 'Location permission denied' : 'Could not read your location');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
   }
 
   _resetMapNorth() {
@@ -10329,6 +10406,12 @@ export class StyleManager {
     this._globalStatusNotice = null;
     if (this._globalLoadingStatus) this._globalLoadingStatus.hidden = true;
     this._disposed = true;
+    this._chromeModuleObserver?.disconnect?.();
+    this._chromeModuleObserver = null;
+    if (this._chromeModuleResizeHandler) {
+      window.removeEventListener('resize', this._chromeModuleResizeHandler);
+      this._chromeModuleResizeHandler = null;
+    }
     // Revoke persistence/hash authority before teardown can emit manager changes.
     this._layerStateCoordinator?.destroy();
     this._layerStateCoordinator = null;

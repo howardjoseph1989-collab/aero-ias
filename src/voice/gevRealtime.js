@@ -2762,7 +2762,12 @@ function createVoiceControl({ reset = false } = {}) {
     root.dataset.status = 'idle';
     root.dataset.speaker = 'idle';
     root.dataset.provider = DEFAULT_VOICE_PROVIDER;
+    root.className = 'chrome-module';
+    root.dataset.chromeModule = 'mic';
     root.innerHTML = `
+      <button type="button" class="chrome-module-handle" aria-label="Move microphone group" title="Drag to move this group">
+        <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+      </button>
       <div class="gev-voice-heading">
         <div class="gev-voice-kicker">AI AGENT</div>
         <div id="gev-voice-status">OFF</div>
@@ -2800,17 +2805,7 @@ function createVoiceControl({ reset = false } = {}) {
     `;
     const commandDock = document.getElementById('command-dock');
     if (commandDock) {
-      const mapSourceDock = document.getElementById('map-source-dock');
-      const quickViews = document.getElementById('top-center-actions');
-      const actionDock = document.getElementById('map-action-dock');
-      const locationBar = document.getElementById('location-bar');
-      const controlPanel = document.getElementById('control-panel');
       commandDock.appendChild(root);
-      if (quickViews) commandDock.insertBefore(quickViews, root);
-      if (mapSourceDock) commandDock.insertBefore(mapSourceDock, root);
-      if (locationBar) commandDock.appendChild(locationBar);
-      if (controlPanel) commandDock.appendChild(controlPanel);
-      if (actionDock) commandDock.appendChild(actionDock);
     } else {
       document.body.appendChild(root);
     }

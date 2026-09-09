@@ -15,6 +15,7 @@ import {
   flyToGlobeView,
   flyToBirdsEyeView,
   flyToStreetView,
+  flyToLatLon,
   flyToPresetLocation,
   geocodeNavigationMode,
   regionFramingPlan,
@@ -553,6 +554,22 @@ test('STREET_VIEW keeps the current point and uses Cesium complete/cancel hooks'
   assert.equal('onComplete' in viewer.flights[0], false);
   viewer.flights[0].complete();
   assert.deepEqual(fired, ['complete']);
+});
+
+test('flyToLatLon uses street-band framing for the My Location control', () => {
+  const viewer = stubViewer();
+  const fired = [];
+  const target = flyToLatLon(viewer, 30.2672, -97.7431, {
+    onComplete: () => fired.push('complete'),
+  });
+  assert.equal(target.heightM, STREET_VIEW.heightM);
+  assert.equal(target.latitude, 30.2672);
+  assert.equal(target.longitude, -97.7431);
+  assert.equal(typeof viewer.flights[0].complete, 'function');
+  assert.equal('onComplete' in viewer.flights[0], false);
+  viewer.flights[0].complete();
+  assert.deepEqual(fired, ['complete']);
+  assert.equal(flyToLatLon(viewer, Number.NaN, -97.7431), null);
 });
 
 test('geocoded Location branches forward the resolved-navigation ownership hook', () => {
