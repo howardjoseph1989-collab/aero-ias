@@ -10438,10 +10438,23 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-l
   cursor: grabbing;
 }
 
-.chrome-module.is-floating {
+.chrome-module.is-floating,
+#map-chrome > .chrome-module.is-floating,
+#top-center-actions.chrome-module.is-floating,
+#map-nav-hud.chrome-module.is-floating,
+#left-panel-stack.chrome-module.is-floating,
+#gev-voice-control.chrome-module.is-floating,
+#location-bar.chrome-module.is-floating,
+#control-panel.chrome-module.is-floating,
+#map-source-dock.chrome-module.is-floating,
+#map-action-dock.chrome-module.is-floating {
   position: fixed;
+  top: auto;
+  right: auto;
+  bottom: auto;
   z-index: 160;
   max-width: min(92vw, 520px);
+  transform: none;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 

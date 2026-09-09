@@ -9807,6 +9807,7 @@ export class StyleManager {
     module.style.top = `${next.top}px`;
     module.style.right = 'auto';
     module.style.bottom = 'auto';
+    module.style.transform = 'none';
     return next;
   }
 
