@@ -257,12 +257,18 @@ test('expanded left panels integrate their headers with the container shell', ()
   );
 });
 
-test('Map Source uses five compact tiles in the bottom Visual Presets tray', () => {
+test('Map Source uses five compact tiles on the bottom command dock', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
 
   assert.doesNotMatch(html, /id="stack-panel"/);
-  assert.match(html, /id="control-panel"[\s\S]*?class="map-source-section"[\s\S]*?id="map-stack-chips"/);
+  assert.match(html, /id="map-source-dock"[\s\S]*?id="map-stack-chips"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="map-source-dock"/);
+  assert.doesNotMatch(
+    html,
+    /id="control-panel-popover"[\s\S]*?id="map-stack-chips"/,
+    'map sources stay on the bottom bar, not inside Visual Presets',
+  );
   assert.match(
     css,
     /\.map-stack-chip-row\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\);/,

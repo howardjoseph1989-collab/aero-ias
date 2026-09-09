@@ -23,7 +23,9 @@ test('Cockpit has one reset action beside its bottom exit path', () => {
   );
   const topCenterActions = html.match(/<nav id="top-center-actions"[\s\S]*?<\/nav>/);
   assert.ok(topCenterActions, 'Top-center globe actions are missing');
-  assert.match(topCenterActions[0], /id="clear-selected-layers"[\s\S]*?id="share-btn"[\s\S]*?id="reset-globe-view"/);
+  assert.match(topCenterActions[0], /id="reset-globe-view"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="clear-selected-layers"/);
+  assert.match(html, /id="command-dock"[\s\S]*?id="share-btn"/);
   assert.equal((html.match(/id="clear-selected-layers"/g) || []).length, 1, 'Clear Layers must have one DOM owner');
   assert.equal((html.match(/id="reset-globe-view"/g) || []).length, 1, 'Reset Globe must have one DOM owner');
   assert.equal((html.match(/id="cockpit-reset-globe"/g) || []).length, 1, 'Cockpit Reset must have one DOM owner');

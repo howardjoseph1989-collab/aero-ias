@@ -203,6 +203,7 @@ const RECOGNIZED = new Set([
   // rail
   '#right-context-rail',
   '#right-context-rail.layout-focus',
+  'body:not(.cockpit-mode) #right-context-rail',
   // tray
   '#command-dock .dock-popover-content',
   '#command-dock #location-bar .dock-popover-content',

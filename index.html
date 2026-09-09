@@ -44,16 +44,35 @@
     <span class="indicator-value" id="active-style-name">NORMAL</span>
   </div>
 
-  <!-- Top-center camera and share actions -->
-  <nav id="top-center-actions" aria-label="Globe actions">
-    <button id="clear-selected-layers" type="button" aria-label="Clear selected data layers" title="Turn off all selected data layers">
-      <span class="material-symbols-outlined" aria-hidden="true">layers_clear</span>
-    </button>
-    <button id="share-btn" type="button" aria-label="Copy share link" title="Copy share link">
-      <span class="share-icon" aria-hidden="true">&#x1F517;</span>
-    </button>
-    <button id="reset-globe-view" type="button" aria-label="Reset to full globe view" title="Reset camera and return to full globe view">
+  <!-- Top-center quick views only — feature menus live in the bottom bars -->
+  <nav id="top-center-actions" aria-label="Quick views">
+    <button id="reset-globe-view" class="quick-view-chip" type="button" data-quick-view="global" aria-label="Reset to full globe view" title="Global / birds-eye — reset camera to the full globe">
       <span class="material-symbols-outlined" aria-hidden="true">public</span>
+      <span>GLOBAL</span>
+    </button>
+    <button id="quick-view-street" class="quick-view-chip" type="button" data-quick-view="street" aria-label="Street / low altitude view" title="Street / low altitude — drop to the current point">
+      <span class="material-symbols-outlined" aria-hidden="true">add_road</span>
+      <span>STREET</span>
+    </button>
+    <button id="quick-view-cockpit" class="quick-view-chip" type="button" data-quick-view="cockpit" aria-label="Cockpit view" title="Cockpit — first-person on a tracked contact">
+      <span class="material-symbols-outlined" aria-hidden="true">flight</span>
+      <span>COCKPIT</span>
+    </button>
+    <button id="quick-view-crt" class="quick-view-chip" type="button" data-quick-view="crt" aria-label="CRT visual preset" title="CRT phosphor preset">
+      <span class="material-symbols-outlined" aria-hidden="true">tv</span>
+      <span>CRT</span>
+    </button>
+    <button id="quick-view-nvg" class="quick-view-chip" type="button" data-quick-view="nvg" aria-label="NVG visual preset" title="Night-vision preset">
+      <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+      <span>NVG</span>
+    </button>
+    <button id="quick-view-flir" class="quick-view-chip" type="button" data-quick-view="flir" aria-label="FLIR visual preset" title="Thermal FLIR preset">
+      <span class="material-symbols-outlined" aria-hidden="true">thermostat</span>
+      <span>FLIR</span>
+    </button>
+    <button id="quick-view-follow" class="quick-view-chip" type="button" data-quick-view="follow" aria-label="Follow tracked target" title="Orbit / follow the current landmark or tracked target">
+      <span class="material-symbols-outlined" aria-hidden="true">rotate_right</span>
+      <span>FOLLOW</span>
     </button>
   </nav>
   <div id="global-loading-status" role="status" aria-live="polite" aria-atomic="true" hidden>
@@ -486,8 +505,35 @@
   </div>
   <button id="clean-view-exit" title="Return UI controls">EXIT CLEAN VIEW</button>
 
-  <!-- Unified bottom command dock: locations, voice (injected at runtime), visual presets -->
-  <div id="command-dock" aria-label="Navigation, voice, and visual preset controls">
+  <!-- Unified bottom command dock: map sources, voice (injected at runtime), essential toggles -->
+  <div id="command-dock" aria-label="Map sources, AERO MIC, and essential toggles">
+  <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
+    <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+      <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+      <span>OUT</span>
+    </button>
+    <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+      <span class="material-symbols-outlined" aria-hidden="true">add</span>
+      <span>IN</span>
+    </button>
+  </div>
+  <div id="map-action-dock" class="map-action-dock" role="group" aria-label="Map actions">
+    <button id="clear-selected-layers" type="button" aria-label="Clear selected data layers" title="Turn off all selected data layers">
+      <span class="material-symbols-outlined" aria-hidden="true">layers_clear</span>
+      <span>CLEAR</span>
+    </button>
+    <button id="share-btn" type="button" aria-label="Copy share link" title="Copy share link">
+      <span class="share-icon" aria-hidden="true">&#x1F517;</span>
+      <span>SHARE</span>
+    </button>
+  </div>
+  <section id="map-source-dock" class="map-source-section" aria-labelledby="map-source-label">
+    <div class="map-source-heading">
+      <span id="map-source-label">MAP SOURCE</span>
+      <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
+    </div>
+    <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
+  </section>
   <!-- Control panel -->
   <div id="control-panel" class="panel-collapsible collapsed">
     <div class="panel-glow"></div>
@@ -537,13 +583,6 @@
           <span class="btn-key">7</span>
         </button>
       </div>
-      <section class="map-source-section" aria-labelledby="map-source-label">
-        <div class="map-source-heading">
-          <span id="map-source-label">MAP SOURCE</span>
-          <span id="map-stack-status" class="pp-stack-status" aria-live="polite">3D</span>
-        </div>
-        <div id="map-stack-chips" class="map-stack-chip-row" role="group" aria-label="Map source"></div>
-      </section>
       </div>
       <div id="style-mini-status" class="panel-mini-status" aria-live="polite">
         <span class="panel-mini-label">Style</span>

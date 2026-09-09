@@ -1268,7 +1268,19 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 
 #command-dock #control-panel.collapsed .map-source-section {
-  display: none;
+  display: flex;
+}
+
+#command-dock > #map-source-dock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  min-width: 12.5rem;
+  max-width: min(22rem, 42vw);
+  padding: 0.35rem 0.55rem;
+  pointer-events: auto;
 }
 
 @media (max-width: 620px) {
@@ -1885,9 +1897,10 @@ body.ui-clean-view #scene-runtime.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  width: auto;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 12px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 50%;
@@ -7684,11 +7697,12 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
 /* ── Command dock refinement: stacked trays + voice states ── */
 #command-dock {
   --dock-voice-width: 8.75rem;
+  --dock-map-width: 16.5rem;
   --dock-location-pinned-height: 0px;
   --dock-presets-pinned-height: 0px;
   --dock-pinned-stack-height: 0px;
   --dock-lower-pinned-height: 0px;
-  --dock-unified-width: calc(var(--dock-side-compact) * 2 + var(--dock-voice-width));
+  --dock-unified-width: calc(var(--dock-side-compact) * 2 + var(--dock-voice-width) + var(--dock-map-width));
   --dock-location-open: max(34rem, calc(var(--dock-unified-width) + 0.75rem));
   --dock-presets-open: max(34rem, calc(var(--dock-unified-width) + 0.75rem));
 }
@@ -9654,51 +9668,106 @@ body {
 
 /* ═══════════════════════════════════════════════
    Top / bottom chrome — keep the globe center clear
-   Side trays become compact top chips. The command
-   dock stays on the bottom edge with a large AERO MIC.
+   Top = quick views only (camera / style / follow).
+   Bottom = ALL feature menus + map sources + zoom +
+   large centered AERO MIC. No persistent side stacks.
    Cockpit keeps the original left-lane instruments.
    Do not add a `#right-context-rail { bottom }` here —
    creditAttribution.test.mjs allows exactly one, at 720px.
+   Use body:not(.cockpit-mode) #right-context-rail instead.
    ═══════════════════════════════════════════════ */
 
 body:not(.cockpit-mode) {
-  --chrome-chip-height: 44px;
+  --chrome-chip-height: 48px;
+  --chrome-top: max(10px, env(safe-area-inset-top, 0px));
+  --chrome-bottom-features: calc(2vh + 8.4rem);
+}
+
+body:not(.cockpit-mode) #title-bar {
+  top: var(--chrome-top);
+  left: max(10px, env(safe-area-inset-left, 0px));
+}
+
+body:not(.cockpit-mode) #title-bar h1 {
+  font-size: 18px;
+  letter-spacing: 0.28em;
+}
+
+body:not(.cockpit-mode) #title-bar .subtitle {
+  display: none;
 }
 
 body:not(.cockpit-mode) #style-indicator {
-  top: 86px;
-  right: auto;
-  left: max(36px, env(safe-area-inset-left, 0px));
-  text-align: left;
+  display: none;
+}
+
+#top-center-actions {
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: min(920px, calc(100vw - 12rem));
+}
+
+#top-center-actions .quick-view-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 72px;
+  min-height: 52px;
+  height: auto;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#top-center-actions .quick-view-chip .material-symbols-outlined {
+  font-size: 22px;
+}
+
+body:not(.cockpit-mode) #top-center-actions {
+  top: var(--chrome-top);
+}
+
+body:not(.cockpit-mode) #top-center-actions button {
+  width: auto;
+  min-width: 72px;
+  min-height: 52px;
+  height: auto;
 }
 
 body:not(.cockpit-mode) #left-panel-stack {
-  top: max(16px, env(safe-area-inset-top, 0px));
-  bottom: auto;
-  left: max(220px, calc(env(safe-area-inset-left, 0px) + 204px));
+  top: auto;
+  right: auto;
+  bottom: var(--chrome-bottom-features);
+  left: max(8px, env(safe-area-inset-left, 0px));
   width: auto;
-  max-width: min(52vw, 640px);
+  max-width: calc(50vw - 16px);
   height: auto;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-/* Recognized own-box selector only. Do not add height/bottom here. */
+/* Recognized own-box selector only. Do not add height here. */
 #right-context-rail {
-  top: 16px;
+  top: auto;
   max-height: none;
 }
 
 body:not(.cockpit-mode) #right-context-rail {
+  top: auto;
+  bottom: var(--chrome-bottom-features);
   width: auto;
-  max-width: min(52vw, 720px);
+  max-width: calc(50vw - 16px);
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 
 body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed,
@@ -9738,7 +9807,8 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles:not(.collapsed),
 body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed),
 body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) {
   position: absolute;
-  top: calc(100% + 8px);
+  top: auto;
+  bottom: calc(100% + 8px);
   z-index: 120;
   flex: 0 0 auto;
   width: min(330px, 92vw);
@@ -9756,9 +9826,10 @@ body:not(.cockpit-mode) #left-panel-stack > #scene-panel:not(.collapsed) {
 body:not(.cockpit-mode) #right-context-rail > #pp-toggles:not(.collapsed),
 body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed),
 body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) {
-  position: fixed;
-  top: 64px;
-  right: 16px;
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: 0;
   left: auto;
   margin-left: 0;
 }
@@ -9799,14 +9870,11 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   min-width: 88px;
   min-height: 88px;
   padding: 0.2rem;
-  color: #f4feff;
-  background: #031820;
-  border: 3px solid #00e6ff;
+  color: #ffffff;
+  background: rgba(8, 14, 20, 0.38);
+  border: 3px solid #ffffff;
   border-radius: 50%;
-  box-shadow:
-    0 0 0 4px rgba(0, 230, 255, 0.2),
-    0 8px 22px rgba(0, 0, 0, 0.45),
-    0 0 28px rgba(0, 230, 255, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
   touch-action: manipulation;
 }
 
@@ -9837,17 +9905,19 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 #command-dock .gev-mic-label {
   display: block;
   margin-top: 0.16rem;
-  color: #f4feff;
-  font-size: 0.68rem;
+  color: #ffffff;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.05rem;
-  text-shadow: 0 0 8px rgba(0, 230, 255, 0.45);
 }
 
 #command-dock #gev-voice-control[data-status='listening'] #gev-voice-button,
-#command-dock #gev-voice-control[data-status='connecting'] #gev-voice-button {
-  background: #06321c;
+#command-dock #gev-voice-control[data-status='connecting'] #gev-voice-button,
+#command-dock #gev-voice-control[data-mic-prompt='listening'] #gev-voice-button,
+#command-dock #gev-voice-control[data-mic-prompt='speak'] #gev-voice-button {
+  background: rgba(8, 40, 28, 0.42);
   border-color: #5cffc6;
+  color: #ffffff;
   box-shadow:
     0 0 0 6px rgba(92, 255, 198, 0.3),
     0 0 34px rgba(92, 255, 198, 0.55);
@@ -9855,8 +9925,10 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 }
 
 #command-dock #gev-voice-control[data-status='listening'] .gev-mic-label,
-#command-dock #gev-voice-control[data-status='connecting'] .gev-mic-label {
-  color: #5cffc6;
+#command-dock #gev-voice-control[data-status='connecting'] .gev-mic-label,
+#command-dock #gev-voice-control[data-mic-prompt='listening'] .gev-mic-label,
+#command-dock #gev-voice-control[data-mic-prompt='speak'] .gev-mic-label {
+  color: #ffffff;
 }
 
 #command-dock #gev-voice-control[data-status='executing'] #gev-voice-button {
@@ -9880,7 +9952,7 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 }
 
 #command-dock #gev-voice-control[data-status='error'] .gev-mic-label {
-  color: #ff8f9d;
+  color: #ffffff;
 }
 
 #command-dock .gev-voice-provider-btn {
@@ -9895,26 +9967,43 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 }
 
 @media (max-width: 900px) {
-  body:not(.cockpit-mode) #left-panel-stack {
-    left: max(12px, env(safe-area-inset-left, 0px));
-    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
-    max-width: calc(100vw - 24px);
+  body:not(.cockpit-mode) {
+    --chrome-bottom-features: calc(2vh + 10.5rem);
+  }
+
+  body:not(.cockpit-mode) #left-panel-stack,
+  body:not(.cockpit-mode) #right-context-rail {
+    top: auto;
+    max-width: calc(100vw - 16px);
   }
 
   body:not(.cockpit-mode) #style-indicator {
-    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
-    left: max(12px, env(safe-area-inset-left, 0px));
+    display: none;
+  }
+
+  body:not(.cockpit-mode) #top-center-actions {
+    top: var(--chrome-top);
+    max-width: calc(100vw - 8rem);
   }
 }
 
 @media (max-width: 720px) {
+  body:not(.cockpit-mode) {
+    --chrome-bottom-features: calc(8px + 14.5rem);
+  }
+
+  body:not(.cockpit-mode) #title-bar h1 {
+    font-size: 14px;
+    letter-spacing: 0.18em;
+  }
+
   body:not(.cockpit-mode) #left-panel-stack {
-    top: max(64px, calc(env(safe-area-inset-top, 0px) + 52px));
+    top: auto;
     right: auto;
-    bottom: auto;
+    bottom: var(--chrome-bottom-features);
     left: max(8px, env(safe-area-inset-left, 0px));
-    width: auto;
-    max-width: calc(58vw - 8px);
+    width: calc(100vw - 16px);
+    max-width: none;
     max-height: none;
     flex-direction: row;
     flex-wrap: wrap;
@@ -9937,34 +10026,51 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   }
 
   #right-context-rail {
-    top: 16px;
+    top: auto;
     max-height: none;
     left: auto;
   }
 
   body:not(.cockpit-mode) #right-context-rail {
-    left: auto;
+    top: auto;
+    bottom: calc(var(--chrome-bottom-features) + 3.4rem);
+    left: max(8px, env(safe-area-inset-left, 0px));
     right: max(8px, env(safe-area-inset-right, 0px));
     width: auto;
-    max-width: calc(42vw - 8px);
+    max-width: none;
     flex-direction: row;
     flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: flex-end;
+    align-items: flex-end;
+    justify-content: flex-start;
   }
 
   #command-dock {
     --dock-voice-width: 12.25rem;
+    --dock-map-width: 100%;
     /* Re-anchor to the modelled 8px floor. Safe-area uses padding so
        creditAttribution.test.mjs can still resolve `bottom: 8px`. */
     bottom: 8px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #command-dock > #map-source-dock {
+    flex: 1 1 100%;
+    max-width: none;
+    order: -1;
   }
 
   #command-dock #gev-voice-button,
   #gev-voice-button {
     min-width: 88px;
     min-height: 88px;
+  }
+
+  #command-dock .map-stack-chip {
+    min-height: 48px;
+    padding: 8px 6px;
+    font-size: 12px;
   }
 }
 
@@ -9979,7 +10085,8 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   }
 
   body:not(.cockpit-mode) #left-panel-stack {
-    bottom: auto;
+    top: auto;
+    bottom: var(--chrome-bottom-features);
   }
 }
 
@@ -9989,4 +10096,135 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
     min-width: 88px;
     min-height: 88px;
   }
+}
+
+/* ═══════════════════════════════════════════════
+   White glass chrome — high contrast on the dark globe
+   Transparent background, white outline, white text.
+   ═══════════════════════════════════════════════ */
+
+body:not(.cockpit-mode) {
+  --chrome-glass: rgba(6, 12, 18, 0.28);
+  --chrome-line: #ffffff;
+  --chrome-ink: #ffffff;
+}
+
+#top-center-actions .quick-view-chip,
+#map-zoom-controls button,
+#map-action-dock button,
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .data-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .scene-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .global-context-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-row,
+#command-dock > #location-bar,
+#command-dock > #control-panel,
+#command-dock > #map-source-dock,
+#command-dock .map-stack-chip {
+  color: #ffffff;
+  background: rgba(6, 12, 18, 0.28);
+  border: 1.5px solid #ffffff;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+#top-center-actions .quick-view-chip {
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#top-center-actions .quick-view-chip .material-symbols-outlined,
+#map-zoom-controls .material-symbols-outlined,
+#map-action-dock .material-symbols-outlined {
+  color: #ffffff;
+  font-size: 22px;
+}
+
+#top-center-actions .quick-view-chip:hover,
+#map-zoom-controls button:hover,
+#map-action-dock button:hover,
+#command-dock .map-stack-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #ffffff;
+  color: #ffffff;
+  transform: none;
+}
+
+#map-zoom-controls,
+#map-action-dock {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+#map-zoom-controls button,
+#map-action-dock button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 56px;
+  min-height: 56px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .panel-title,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .panel-title,
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-label,
+#command-dock .panel-title,
+#command-dock .location-toolbar-label,
+#command-dock #map-source-label,
+#command-dock .map-stack-chip,
+#command-dock .btn-label {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#command-dock .map-stack-chip {
+  min-height: 48px;
+  border-radius: 10px;
+}
+
+#command-dock .map-stack-chip.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+#command-dock > #gev-voice-control {
+  background: rgba(6, 12, 18, 0.28);
+  border: 1.5px solid #ffffff;
+}
+
+#command-dock #gev-voice-detail,
+#command-dock #gev-voice-status,
+#command-dock .gev-voice-kicker,
+#command-dock .gev-voice-provider-btn {
+  color: #ffffff;
+}
+
+#command-dock .gev-mic-orbit {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #ffffff;
+  box-shadow: none;
+}
+
+#command-dock .gev-mic-orbit img {
+  filter: brightness(10) grayscale(1);
+  opacity: 1;
 }

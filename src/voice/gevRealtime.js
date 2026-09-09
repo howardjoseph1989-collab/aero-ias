@@ -2800,11 +2800,17 @@ function createVoiceControl({ reset = false } = {}) {
     `;
     const commandDock = document.getElementById('command-dock');
     if (commandDock) {
+      const mapSourceDock = document.getElementById('map-source-dock');
+      const zoomControls = document.getElementById('map-zoom-controls');
+      const actionDock = document.getElementById('map-action-dock');
       const locationBar = document.getElementById('location-bar');
       const controlPanel = document.getElementById('control-panel');
       commandDock.appendChild(root);
-      if (locationBar) commandDock.insertBefore(locationBar, root);
+      if (zoomControls) commandDock.insertBefore(zoomControls, root);
+      if (mapSourceDock) commandDock.insertBefore(mapSourceDock, root);
+      if (locationBar) commandDock.appendChild(locationBar);
       if (controlPanel) commandDock.appendChild(controlPanel);
+      if (actionDock) commandDock.appendChild(actionDock);
     } else {
       document.body.appendChild(root);
     }

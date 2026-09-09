@@ -12,7 +12,12 @@ import {
   clampBloomIntensity,
   decodeBloomIntensity,
 } from './bloom.js';
-import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToPresetLocation, flyToPOI, searchAndFlyTo } from './locations.js';
+import { LOCATIONS, CITY_POIS, GLOBE_VIEW, flyToGlobeView, flyToStreetView, flyToPresetLocation, flyToPOI, searchAndFlyTo } from './locations.js';
+import {
+  applyNaturalGlobeControls,
+  cameraZoomMovementM,
+  styleIdForQuickView,
+} from './quickViews.js';
 import { locationMiniStatus } from './locationStatus.js';
 import { interruptCameraMotion } from './cameraVerbs.js';
 import {
@@ -2627,6 +2632,8 @@ export class StyleManager {
     this._initShareButton();
     this._initClearSelectedLayersButton();
     this._initResetGlobeButton();
+    this._initQuickViews();
+    this._initMapZoomButtons();
     this._initHUDToggle();
     this._initModels3dToggle();
     this._applyGlobalPostDefaults();
@@ -9634,6 +9641,65 @@ export class StyleManager {
     for (const button of [this._resetGlobeBtn, this._cockpitResetGlobeBtn]) {
       button?.addEventListener('click', this._globeResetHandler);
     }
+  }
+
+  /** Top-bar quick views — existing camera, cockpit, style, and orbit APIs. */
+  _initQuickViews() {
+    this._quickViewHandler = (event) => {
+      const button = event.currentTarget;
+      const view = button?.dataset?.quickView;
+      if (view === 'global') {
+        void this.resetToGlobeView();
+        return;
+      }
+      if (view === 'street') {
+        this._stampNavigation();
+        interruptCameraMotion('street-view');
+        this._stopOrbit();
+        this.viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        flyToStreetView(this.viewer);
+        return;
+      }
+      if (view === 'cockpit') {
+        if (this.cockpitView?.active) {
+          this.cockpitView.exit();
+          return;
+        }
+        if (!this.cockpitView?.enter()) {
+          this._showToast('Select a tracked contact first');
+        }
+        return;
+      }
+      if (view === 'follow') {
+        this._toggleOrbit();
+        return;
+      }
+      const styleId = styleIdForQuickView(view);
+      if (styleId) {
+        this.setStyle(this.activeStyle === styleId ? 'normal' : styleId);
+      }
+    };
+    document.querySelectorAll('#top-center-actions [data-quick-view]').forEach((button) => {
+      button.addEventListener('click', this._quickViewHandler);
+    });
+  }
+
+  /** Large bottom zoom buttons — same distance math as the voice zoom tool. */
+  _initMapZoomButtons() {
+    const zoom = (direction) => {
+      const camera = this.viewer?.camera;
+      if (!camera) return;
+      this._stampNavigation();
+      interruptCameraMotion('map-zoom');
+      const heightM = camera.positionCartographic?.height;
+      const movementM = cameraZoomMovementM({ direction, heightM, amount: 'medium' });
+      camera.cancelFlight?.();
+      if (direction === 'out') camera.zoomOut(movementM);
+      else camera.zoomIn(movementM);
+      this.viewer.scene?.requestRender?.();
+    };
+    document.getElementById('map-zoom-in')?.addEventListener('click', () => zoom('in'));
+    document.getElementById('map-zoom-out')?.addEventListener('click', () => zoom('out'));
   }
 
   /** Wire the top-center action that clears only manager-owned data layers. */
