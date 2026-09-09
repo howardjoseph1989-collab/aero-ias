@@ -12,7 +12,10 @@
 import { GEV_REALTIME_TOOLS, toGeminiFunctionDeclarations } from './gevToolSchemas.mjs';
 
 export const GEMINI_GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-export const DEFAULT_GEMINI_VOICE_MODEL = 'gemini-2.5-flash';
+// Gemini 3.6 Flash is the recommended voice+tools model (audio in, text/tools out).
+// Override with GEMINI_VOICE_MODEL. It does not support audio generation — spoken
+// replies stay on a dedicated TTS id (DEFAULT_GEMINI_TTS_MODEL / GEMINI_TTS_MODEL).
+export const DEFAULT_GEMINI_VOICE_MODEL = 'gemini-3.6-flash';
 export const DEFAULT_GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 export const GEMINI_TURN_BODY_LIMIT = 2 * 1024 * 1024;
 export const GEMINI_AUDIO_B64_LIMIT = 1_400_000;

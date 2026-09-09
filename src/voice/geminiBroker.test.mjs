@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_GEMINI_TTS_MODEL,
+  DEFAULT_GEMINI_VOICE_MODEL,
   aeroIasVoiceInstructions,
   buildGeminiGenerateRequest,
   buildGeminiTtsRequest,
@@ -8,6 +10,7 @@ import {
   geminiVoiceStatus,
   parseGeminiTurnBody,
   resolveGeminiApiKey,
+  resolveGeminiModels,
   runGeminiTurn,
   sanitizeGeminiError,
 } from './geminiBroker.mjs';
@@ -19,10 +22,28 @@ test('Gemini key resolution prefers GEMINI_API_KEY over GOOGLE_API_KEY', () => {
   assert.equal(resolveGeminiApiKey({}), '');
 });
 
+test('Gemini voice defaults to 3.6 Flash and keeps TTS on a dedicated audio model', () => {
+  assert.equal(DEFAULT_GEMINI_VOICE_MODEL, 'gemini-3.6-flash');
+  assert.equal(DEFAULT_GEMINI_TTS_MODEL, 'gemini-2.5-flash-preview-tts');
+  assert.deepEqual(resolveGeminiModels({}), {
+    voice: 'gemini-3.6-flash',
+    tts: 'gemini-2.5-flash-preview-tts',
+  });
+  assert.deepEqual(resolveGeminiModels({
+    GEMINI_VOICE_MODEL: ' gemini-2.5-flash ',
+    GEMINI_TTS_MODEL: ' gemini-2.5-pro-preview-tts ',
+  }), {
+    voice: 'gemini-2.5-flash',
+    tts: 'gemini-2.5-pro-preview-tts',
+  });
+});
+
 test('Gemini status reports the turn-based mode without leaking the key', () => {
-  const status = geminiVoiceStatus({ GEMINI_API_KEY: 'secret-key', GEMINI_VOICE_MODEL: 'gemini-2.5-flash' });
+  const status = geminiVoiceStatus({ GEMINI_API_KEY: 'secret-key' });
   assert.equal(status.available, true);
   assert.equal(status.mode, 'turn');
+  assert.equal(status.model, 'gemini-3.6-flash');
+  assert.equal(status.ttsModel, 'gemini-2.5-flash-preview-tts');
   assert.equal(status.toolCount, GEV_VOICE_TOOL_COUNT);
   assert.equal(JSON.stringify(status).includes('secret-key'), false);
 });
@@ -114,6 +135,9 @@ test('runGeminiTurn stays keyless-honest and executes a mocked generateContent l
   assert.equal(result.payload.text, 'Flying to Tokyo');
   assert.equal(result.payload.functionCalls.length, 0);
   assert.equal(result.payload.audio, 'UEs=');
+  assert.equal(result.payload.model, 'gemini-3.6-flash');
   assert.equal(calls[0].url.includes('key=test-key'), true);
+  assert.equal(calls[0].url.includes('gemini-3.6-flash'), true);
+  assert.equal(calls[1].url.includes('gemini-2.5-flash-preview-tts'), true);
   assert.equal(calls[0].body.tools[0].functionDeclarations.length, 28);
 });
