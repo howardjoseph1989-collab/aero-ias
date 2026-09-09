@@ -6891,6 +6891,17 @@ export class StyleManager {
       return;
     }
 
+    // Map view uses top-edge chips. Skip the vertical right-lane corridor so
+    // JS-written --right-stack-safe-top cannot drag CONTEXT/DISPLAY back to 26vh.
+    if (!document.body.classList.contains('cockpit-mode')) {
+      stack.classList.remove('layout-focus');
+      stack.style.removeProperty('--right-stack-safe-top');
+      stack.style.removeProperty('--right-stack-max-height');
+      for (const panel of panels) panel.style.removeProperty('--right-panel-allocated-height');
+      stack.dataset.layoutMode = 'edge';
+      return;
+    }
+
     const viewportHeight = Math.max(1, window.innerHeight);
     const safeGap = Math.max(8, viewportHeight * 0.012);
     const stackRect = stack.getBoundingClientRect();
@@ -7197,13 +7208,17 @@ export class StyleManager {
 
     // The existing narrow-screen composition has its own full-width stack.
     // Keep this desktop lane engine from fighting those dedicated rules.
-    if (window.matchMedia('(max-width: 720px)').matches) {
+    // Map view also uses top-edge chips — the vertical left corridor is only
+    // for cockpit instruments.
+    const isMobileLeft = window.matchMedia('(max-width: 720px)').matches;
+    const isCockpitLeft = document.body.classList.contains('cockpit-mode');
+    if (isMobileLeft || !isCockpitLeft) {
       stack.classList.remove('layout-focus');
       stack.classList.remove('layout-tail');
       stack.style.removeProperty('--left-stack-safe-top');
       stack.style.removeProperty('--left-stack-safe-bottom');
       stack.style.removeProperty('--left-stack-centered-height');
-      stack.dataset.layoutMode = 'mobile';
+      stack.dataset.layoutMode = isMobileLeft ? 'mobile' : 'edge';
       for (const panel of panels) {
         panel.removeAttribute('aria-hidden');
         panel.style.removeProperty('--left-panel-allocated-height');
@@ -7415,8 +7430,10 @@ export class StyleManager {
     panelEl.querySelectorAll('.panel-collapse-btn[data-collapse-target]').forEach((btn) => {
       const owner = btn.closest('[data-panel-id], #param-slider-panel');
       if (owner !== panelEl) return;
-      if (isRightRail) {
+      if (isRightRail && document.body.classList.contains('cockpit-mode')) {
         btn.textContent = collapsed ? '◀' : '▶';
+      } else if (!document.body.classList.contains('cockpit-mode')) {
+        btn.textContent = collapsed ? '▾' : '▴';
       } else {
         btn.textContent = collapsed ? '+' : '−';
       }

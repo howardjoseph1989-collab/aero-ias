@@ -93,10 +93,10 @@ export function voiceProviderHint(provider, { openai = false, gemini = false } =
   const id = normalizeVoiceProvider(provider);
   if (id === 'gemini') {
     return gemini
-      ? 'Recommended — hold Space or tap MIC, then pause to send a Gemini turn'
+      ? 'Recommended — hold Space or tap AERO MIC, then pause to send a Gemini turn'
       : 'Recommended path — add GEMINI_API_KEY or GOOGLE_API_KEY in Provider Settings';
   }
   return openai
-    ? 'Optional OpenAI Realtime — hold Space to speak · click mic to toggle'
+    ? 'Optional OpenAI Realtime — hold Space to speak · tap AERO MIC to toggle'
     : 'Optional original path — needs OPENAI_API_KEY in Provider Settings';
 }

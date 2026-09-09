@@ -220,13 +220,13 @@ export class GevGeminiController {
         ? (resolved || 'Gemini voice session could not be started.')
         : '';
     }
-    if (this.ui?.buttonLabel) this.ui.buttonLabel.textContent = 'MIC';
+    if (this.ui?.buttonLabel) this.ui.buttonLabel.textContent = 'AERO MIC';
     if (this.ui?.helpDetail) {
       this.ui.helpDetail.textContent = this.pushToTalkMode
         ? (this.pushToTalkKeyHeld
           ? 'Release Space to send'
-          : 'Hold Space to speak · tap MIC to toggle Gemini')
-        : 'Tap MIC or hold Space — Gemini sends a turn after you pause';
+          : 'Hold Space to speak · tap AERO MIC to toggle Gemini')
+        : 'Tap AERO MIC or hold Space — Gemini sends a turn after you pause';
     }
     if (shouldPauseRadioForVoice({ status, pushToTalkKeyHeld: this.pushToTalkKeyHeld })) {
       this.pauseRadioForVoice();

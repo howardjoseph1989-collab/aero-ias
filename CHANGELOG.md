@@ -14,6 +14,11 @@ of current runtime behavior, see [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md
 - Product display name is now **AERO IAS** (all caps, space, no hyphen).
   User-facing titles, UI chrome, Pinokio metadata, and package description
   use that exact string. See [NOTICE](NOTICE) for upstream attribution.
+- Map-view chrome moved to the **top and bottom edges** so the globe center
+  stays visible. Side trays collapse into top chips; the command dock stays
+  at the bottom with a much larger high-contrast **AERO MIC** control.
+  Layers, map sources, dock trays, Gemini + OpenAI, and the 28 voice tools
+  are unchanged. Cockpit still uses the original left-lane instruments.
 
 ### Fixed
 

@@ -9651,3 +9651,342 @@ body {
     font-size: 0.55rem;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   Top / bottom chrome — keep the globe center clear
+   Side trays become compact top chips. The command
+   dock stays on the bottom edge with a large AERO MIC.
+   Cockpit keeps the original left-lane instruments.
+   Do not add a `#right-context-rail { bottom }` here —
+   creditAttribution.test.mjs allows exactly one, at 720px.
+   ═══════════════════════════════════════════════ */
+
+body:not(.cockpit-mode) {
+  --chrome-chip-height: 44px;
+}
+
+body:not(.cockpit-mode) #style-indicator {
+  top: 86px;
+  right: auto;
+  left: max(36px, env(safe-area-inset-left, 0px));
+  text-align: left;
+}
+
+body:not(.cockpit-mode) #left-panel-stack {
+  top: max(16px, env(safe-area-inset-top, 0px));
+  bottom: auto;
+  left: max(220px, calc(env(safe-area-inset-left, 0px) + 204px));
+  width: auto;
+  max-width: min(52vw, 640px);
+  height: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Recognized own-box selector only. Do not add height/bottom here. */
+#right-context-rail {
+  top: 16px;
+  max-height: none;
+}
+
+body:not(.cockpit-mode) #right-context-rail {
+  width: auto;
+  max-width: min(52vw, 720px);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed,
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .panel-glow,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .panel-glow {
+  display: none;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .data-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .scene-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > [data-panel-id].collapsed .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > [data-panel-id].collapsed .global-context-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-row {
+  display: flex;
+  align-items: center;
+  width: auto;
+  height: var(--chrome-chip-height);
+  min-height: var(--chrome-chip-height);
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > #data-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #scene-panel:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 120;
+  flex: 0 0 auto;
+  width: min(330px, 92vw);
+  height: auto;
+  max-height: min(52vh, 560px);
+  overflow: auto;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > #data-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #left-panel-stack > #scene-panel:not(.collapsed) {
+  left: 0;
+}
+
+body:not(.cockpit-mode) #right-context-rail > #pp-toggles:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed),
+body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  left: auto;
+  margin-left: 0;
+}
+
+body:not(.cockpit-mode) #left-panel-stack > #data-panel:not(.collapsed) .data-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > #scene-panel:not(.collapsed) .scene-panel-inner,
+body:not(.cockpit-mode) #left-panel-stack > #cctv-panel:not(.collapsed) .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > #cctv-panel:not(.collapsed) .cctv-panel-inner,
+body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collapsed) .global-context-panel-inner {
+  height: auto;
+  max-height: min(50vh, 540px);
+}
+
+/* Large AERO MIC — later rules win over the compact dock orbit. */
+#command-dock {
+  --dock-voice-width: 13.5rem;
+}
+
+#command-dock > #gev-voice-control {
+  grid-template-columns: 6.85rem minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  width: var(--dock-voice-width);
+  flex-basis: var(--dock-voice-width);
+  min-height: 6.85rem;
+  height: auto;
+  margin-top: -1.55rem;
+  margin-bottom: -0.35rem;
+  padding: 0.28rem 0.4rem 0.28rem 0.28rem;
+  overflow: visible;
+}
+
+#command-dock #gev-voice-button {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: center;
+  width: 6.75rem;
+  height: 6.75rem;
+  min-width: 88px;
+  min-height: 88px;
+  padding: 0.2rem;
+  color: #f4feff;
+  background: #031820;
+  border: 3px solid #00e6ff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px rgba(0, 230, 255, 0.2),
+    0 8px 22px rgba(0, 0, 0, 0.45),
+    0 0 28px rgba(0, 230, 255, 0.38);
+  touch-action: manipulation;
+}
+
+#command-dock #gev-voice-button:hover,
+#command-dock #gev-voice-button:focus-visible {
+  color: #ffffff;
+  border-color: #9af7ff;
+  box-shadow:
+    0 0 0 5px rgba(0, 230, 255, 0.28),
+    0 0 34px rgba(0, 230, 255, 0.5);
+}
+
+#command-dock .gev-mic-orbit {
+  flex: 0 0 3.6rem;
+  width: 3.6rem;
+  height: 3.6rem;
+  background: rgba(0, 230, 255, 0.16);
+  border: 2px solid #7ef0ff;
+  box-shadow: 0 0 12px rgba(0, 230, 255, 0.28);
+}
+
+#command-dock .gev-mic-orbit img {
+  width: 2.5rem;
+  height: 2.5rem;
+  filter: brightness(1.45);
+}
+
+#command-dock .gev-mic-label {
+  display: block;
+  margin-top: 0.16rem;
+  color: #f4feff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
+  text-shadow: 0 0 8px rgba(0, 230, 255, 0.45);
+}
+
+#command-dock #gev-voice-control[data-status='listening'] #gev-voice-button,
+#command-dock #gev-voice-control[data-status='connecting'] #gev-voice-button {
+  background: #06321c;
+  border-color: #5cffc6;
+  box-shadow:
+    0 0 0 6px rgba(92, 255, 198, 0.3),
+    0 0 34px rgba(92, 255, 198, 0.55);
+  animation: aero-mic-listen 1.15s ease-in-out infinite;
+}
+
+#command-dock #gev-voice-control[data-status='listening'] .gev-mic-label,
+#command-dock #gev-voice-control[data-status='connecting'] .gev-mic-label {
+  color: #5cffc6;
+}
+
+#command-dock #gev-voice-control[data-status='executing'] #gev-voice-button {
+  background: #2a2208;
+  border-color: #ffdc78;
+  box-shadow:
+    0 0 0 6px rgba(255, 220, 120, 0.28),
+    0 0 28px rgba(255, 220, 120, 0.4);
+}
+
+#command-dock #gev-voice-control[data-status='executing'] .gev-mic-label {
+  color: #ffdc78;
+}
+
+#command-dock #gev-voice-control[data-status='error'] #gev-voice-button {
+  background: #2a0a12;
+  border-color: #ff5c6e;
+  box-shadow:
+    0 0 0 6px rgba(255, 92, 110, 0.32),
+    0 0 28px rgba(255, 92, 110, 0.45);
+}
+
+#command-dock #gev-voice-control[data-status='error'] .gev-mic-label {
+  color: #ff8f9d;
+}
+
+#command-dock .gev-voice-provider-btn {
+  min-height: 1.35rem;
+  padding: 0 0.4rem;
+  font-size: 0.52rem;
+}
+
+@keyframes aero-mic-listen {
+  0%, 100% { box-shadow: 0 0 0 5px rgba(92, 255, 198, 0.22), 0 0 22px rgba(92, 255, 198, 0.4); }
+  50% { box-shadow: 0 0 0 9px rgba(92, 255, 198, 0.38), 0 0 36px rgba(92, 255, 198, 0.7); }
+}
+
+@media (max-width: 900px) {
+  body:not(.cockpit-mode) #left-panel-stack {
+    left: max(12px, env(safe-area-inset-left, 0px));
+    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
+    max-width: calc(100vw - 24px);
+  }
+
+  body:not(.cockpit-mode) #style-indicator {
+    top: max(72px, calc(env(safe-area-inset-top, 0px) + 56px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+  }
+}
+
+@media (max-width: 720px) {
+  body:not(.cockpit-mode) #left-panel-stack {
+    top: max(64px, calc(env(safe-area-inset-top, 0px) + 52px));
+    right: auto;
+    bottom: auto;
+    left: max(8px, env(safe-area-inset-left, 0px));
+    width: auto;
+    max-width: calc(58vw - 8px);
+    max-height: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  body:not(.cockpit-mode) #left-panel-stack > #data-panel.collapsed,
+  body:not(.cockpit-mode) #left-panel-stack > #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #left-panel-stack > #scene-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #global-context-panel.collapsed {
+    width: auto;
+    max-width: none;
+  }
+
+  body:not(.cockpit-mode) #right-context-rail #pp-toggles.collapsed .pp-header-row,
+  body:not(.cockpit-mode) #right-context-rail #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail #global-context-panel.collapsed {
+    width: auto;
+  }
+
+  #right-context-rail {
+    top: 16px;
+    max-height: none;
+    left: auto;
+  }
+
+  body:not(.cockpit-mode) #right-context-rail {
+    left: auto;
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: auto;
+    max-width: calc(42vw - 8px);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  #command-dock {
+    --dock-voice-width: 12.25rem;
+    /* Re-anchor to the modelled 8px floor. Safe-area uses padding so
+       creditAttribution.test.mjs can still resolve `bottom: 8px`. */
+    bottom: 8px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  #command-dock #gev-voice-button,
+  #gev-voice-button {
+    min-width: 88px;
+    min-height: 88px;
+  }
+}
+
+@media (max-width: 620px) {
+  #command-dock {
+    --dock-voice-width: 11.5rem;
+  }
+
+  #command-dock #gev-voice-button {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  body:not(.cockpit-mode) #left-panel-stack {
+    bottom: auto;
+  }
+}
+
+@media (pointer: coarse) {
+  #command-dock #gev-voice-button,
+  #gev-voice-button {
+    min-width: 88px;
+    min-height: 88px;
+  }
+}
