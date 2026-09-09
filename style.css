@@ -9774,17 +9774,17 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 
 /* Large AERO MIC — later rules win over the compact dock orbit. */
 #command-dock {
-  --dock-voice-width: 12.5rem;
+  --dock-voice-width: 13.5rem;
 }
 
 #command-dock > #gev-voice-control {
-  grid-template-columns: 5.85rem minmax(0, 1fr);
+  grid-template-columns: 6.85rem minmax(0, 1fr);
   grid-template-rows: auto auto auto;
   width: var(--dock-voice-width);
   flex-basis: var(--dock-voice-width);
-  min-height: 5.85rem;
+  min-height: 6.85rem;
   height: auto;
-  margin-top: -1.15rem;
+  margin-top: -1.55rem;
   margin-bottom: -0.35rem;
   padding: 0.28rem 0.4rem 0.28rem 0.28rem;
   overflow: visible;
@@ -9794,10 +9794,10 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   grid-column: 1;
   grid-row: 1 / 4;
   align-self: center;
-  width: 5.75rem;
-  height: 5.75rem;
-  min-width: 72px;
-  min-height: 72px;
+  width: 6.75rem;
+  height: 6.75rem;
+  min-width: 88px;
+  min-height: 88px;
   padding: 0.2rem;
   color: #f4feff;
   background: #031820;
@@ -9820,27 +9820,27 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 }
 
 #command-dock .gev-mic-orbit {
-  flex: 0 0 3.15rem;
-  width: 3.15rem;
-  height: 3.15rem;
+  flex: 0 0 3.6rem;
+  width: 3.6rem;
+  height: 3.6rem;
   background: rgba(0, 230, 255, 0.16);
   border: 2px solid #7ef0ff;
   box-shadow: 0 0 12px rgba(0, 230, 255, 0.28);
 }
 
 #command-dock .gev-mic-orbit img {
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 2.5rem;
+  height: 2.5rem;
   filter: brightness(1.45);
 }
 
 #command-dock .gev-mic-label {
   display: block;
-  margin-top: 0.12rem;
+  margin-top: 0.16rem;
   color: #f4feff;
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.04rem;
+  letter-spacing: 0.05rem;
   text-shadow: 0 0 8px rgba(0, 230, 255, 0.45);
 }
 
@@ -9914,18 +9914,39 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
     bottom: auto;
     left: max(8px, env(safe-area-inset-left, 0px));
     width: auto;
-    max-width: calc(100vw - 16px);
+    max-width: calc(58vw - 8px);
     max-height: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  body:not(.cockpit-mode) #left-panel-stack > #data-panel.collapsed,
+  body:not(.cockpit-mode) #left-panel-stack > #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #left-panel-stack > #scene-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail > #global-context-panel.collapsed {
+    width: auto;
+    max-width: none;
+  }
+
+  body:not(.cockpit-mode) #right-context-rail #pp-toggles.collapsed .pp-header-row,
+  body:not(.cockpit-mode) #right-context-rail #cctv-panel.collapsed,
+  body:not(.cockpit-mode) #right-context-rail #global-context-panel.collapsed {
+    width: auto;
   }
 
   #right-context-rail {
     top: 16px;
     max-height: none;
+    left: auto;
   }
 
   body:not(.cockpit-mode) #right-context-rail {
+    left: auto;
+    right: max(8px, env(safe-area-inset-right, 0px));
     width: auto;
-    max-width: calc(100vw - 16px);
+    max-width: calc(42vw - 8px);
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -9933,7 +9954,7 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
   }
 
   #command-dock {
-    --dock-voice-width: 11.25rem;
+    --dock-voice-width: 12.25rem;
     /* Re-anchor to the modelled 8px floor. Safe-area uses padding so
        creditAttribution.test.mjs can still resolve `bottom: 8px`. */
     bottom: 8px;
@@ -9942,19 +9963,19 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 
   #command-dock #gev-voice-button,
   #gev-voice-button {
-    min-width: 72px;
-    min-height: 72px;
+    min-width: 88px;
+    min-height: 88px;
   }
 }
 
 @media (max-width: 620px) {
   #command-dock {
-    --dock-voice-width: 10.5rem;
+    --dock-voice-width: 11.5rem;
   }
 
   #command-dock #gev-voice-button {
-    width: 4.85rem;
-    height: 4.85rem;
+    width: 5.5rem;
+    height: 5.5rem;
   }
 
   body:not(.cockpit-mode) #left-panel-stack {
@@ -9965,7 +9986,7 @@ body:not(.cockpit-mode) #right-context-rail > #global-context-panel:not(.collaps
 @media (pointer: coarse) {
   #command-dock #gev-voice-button,
   #gev-voice-button {
-    min-width: 72px;
-    min-height: 72px;
+    min-width: 88px;
+    min-height: 88px;
   }
 }
