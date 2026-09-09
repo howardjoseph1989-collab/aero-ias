@@ -2801,13 +2801,11 @@ function createVoiceControl({ reset = false } = {}) {
     const commandDock = document.getElementById('command-dock');
     if (commandDock) {
       const mapSourceDock = document.getElementById('map-source-dock');
-      const zoomControls = document.getElementById('map-zoom-controls');
       const quickViews = document.getElementById('top-center-actions');
       const actionDock = document.getElementById('map-action-dock');
       const locationBar = document.getElementById('location-bar');
       const controlPanel = document.getElementById('control-panel');
       commandDock.appendChild(root);
-      if (zoomControls) commandDock.insertBefore(zoomControls, root);
       if (quickViews) commandDock.insertBefore(quickViews, root);
       if (mapSourceDock) commandDock.insertBefore(mapSourceDock, root);
       if (locationBar) commandDock.appendChild(locationBar);

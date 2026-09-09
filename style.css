@@ -1419,6 +1419,7 @@ body.ui-clean-view #clean-view-exit {
 body.ui-clean-view #title-bar,
 body.ui-clean-view #style-indicator,
 body.ui-clean-view #top-center-actions,
+body.ui-clean-view #map-nav-hud,
 body.ui-clean-view #global-loading-status,
 body.ui-clean-view #traffic-sync-chip,
 body.ui-clean-view #cctv-sync-chip,
@@ -3854,7 +3855,7 @@ body.cockpit-mode #view-switcher button {
 .cockpit-help span { color: var(--cockpit-accent); }
 body.cockpit-mode :is(
   #title-bar, #style-indicator, #top-center-actions, #traffic-sync-chip, #cctv-sync-chip,
-  #command-dock,
+  #command-dock, #map-nav-hud,
   #military-awareness-panel, #military-awareness-direction-overlay,
   #cockpit-entry
 ) { display: none !important; }
@@ -7213,7 +7214,10 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 body.ui-clean-view #command-dock,
-body.recording-mode #command-dock {
+body.recording-mode #command-dock,
+body.ui-clean-view #map-nav-hud,
+body.recording-mode #map-nav-hud,
+body.recording-mode #top-center-actions {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
@@ -9722,13 +9726,13 @@ body:not(.cockpit-mode) #style-indicator {
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 72px;
-  min-height: 64px;
+  min-width: 96px;
+  min-height: 72px;
   height: auto;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 12px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -9739,8 +9743,8 @@ body:not(.cockpit-mode) #style-indicator {
 
 body:not(.cockpit-mode) #top-center-actions button {
   width: auto;
-  min-width: 72px;
-  min-height: 64px;
+  min-width: 96px;
+  min-height: 72px;
   height: auto;
 }
 
@@ -10121,13 +10125,12 @@ body:not(.cockpit-mode) {
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
 }
 
-#command-dock > #map-zoom-controls { order: 1; }
-#command-dock > #top-center-actions { order: 2; }
-#command-dock > #gev-voice-control { order: 3; }
-#command-dock > #map-source-dock { order: 4; }
-#command-dock > #map-action-dock { order: 5; }
-#command-dock > #location-bar { order: 6; }
-#command-dock > #control-panel { order: 7; }
+#command-dock > #top-center-actions { order: 1; }
+#command-dock > #gev-voice-control { order: 2; }
+#command-dock > #map-source-dock { order: 3; }
+#command-dock > #map-action-dock { order: 4; }
+#command-dock > #location-bar { order: 5; }
+#command-dock > #control-panel { order: 6; }
 
 #top-center-actions .quick-view-chip,
 #map-zoom-controls button,
@@ -10156,7 +10159,7 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-r
 #top-center-actions .quick-view-chip {
   border-radius: 12px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -10265,5 +10268,72 @@ body:not(.cockpit-mode) #right-context-rail > #pp-toggles.collapsed .pp-header-l
 #command-dock #control-panel .panel-title::after,
 #command-dock .btn-icon,
 #command-dock .share-icon {
+  color: #ffffff;
+}
+
+#map-nav-hud {
+  position: fixed;
+  top: 28%;
+  right: 16px;
+  z-index: 160;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px;
+  color: #ffffff;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  border-radius: 16px;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  touch-action: none;
+  user-select: none;
+}
+
+#map-nav-hud.is-dragging {
+  cursor: grabbing;
+}
+
+#map-nav-hud #map-zoom-controls {
+  flex-direction: column;
+}
+
+#map-nav-hud button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 72px;
+  min-height: 64px;
+  padding: 8px 10px;
+  color: #ffffff;
+  background: rgba(6, 12, 18, 0.22);
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#map-nav-hud #map-nav-drag {
+  min-height: 36px;
+  cursor: grab;
+}
+
+#map-nav-hud #map-nav-drag .material-symbols-outlined,
+#map-nav-hud .material-symbols-outlined {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+#map-nav-hud button:hover,
+#map-nav-hud button:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
 }

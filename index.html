@@ -474,46 +474,44 @@
   </div>
   <button id="clean-view-exit" title="Return UI controls">EXIT CLEAN VIEW</button>
 
-  <!-- Unified bottom command dock: every map control lives here -->
+  <aside id="map-nav-hud" aria-label="Map navigation">
+    <button id="map-nav-drag" type="button" aria-label="Drag navigation HUD" title="Drag to move this HUD">
+      <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+    </button>
+    <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
+      <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+        <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+        <span>OUT</span>
+      </button>
+      <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        <span>IN</span>
+      </button>
+    </div>
+    <button id="map-nav-spin" type="button" aria-label="Orbit current view" title="360 orbit around the current look">
+      <span class="material-symbols-outlined" aria-hidden="true">360</span>
+      <span>360</span>
+    </button>
+    <button id="map-nav-north" type="button" aria-label="Reset north" title="Reset heading to north">
+      <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+      <span>NORTH</span>
+    </button>
+  </aside>
+
+  <!-- Unified bottom command dock: every map feature lives here -->
   <div id="command-dock" aria-label="AERO IAS map controls">
-  <div id="map-zoom-controls" class="map-zoom-controls" role="group" aria-label="Map zoom">
-    <button id="map-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
-      <span class="material-symbols-outlined" aria-hidden="true">remove</span>
-      <span>OUT</span>
-    </button>
-    <button id="map-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
-      <span class="material-symbols-outlined" aria-hidden="true">add</span>
-      <span>IN</span>
-    </button>
-  </div>
   <nav id="top-center-actions" aria-label="Quick views">
-    <button id="reset-globe-view" class="quick-view-chip" type="button" data-quick-view="global" aria-label="Reset to full globe view" title="Global / birds-eye — reset camera to the full globe">
+    <button id="reset-globe-view" class="quick-view-chip" type="button" data-quick-view="global" aria-label="Reset to full globe view" title="Global — full world view">
       <span class="material-symbols-outlined" aria-hidden="true">public</span>
       <span>GLOBAL</span>
     </button>
-    <button id="quick-view-street" class="quick-view-chip" type="button" data-quick-view="street" aria-label="Street / low altitude view" title="Street / low altitude — drop to the current point">
+    <button id="quick-view-birds-eye" class="quick-view-chip" type="button" data-quick-view="birds-eye" aria-label="Birds-eye view" title="Birds eye — high-altitude look at the current point">
+      <span class="material-symbols-outlined" aria-hidden="true">flight</span>
+      <span>BIRDS EYE</span>
+    </button>
+    <button id="quick-view-street" class="quick-view-chip" type="button" data-quick-view="street" aria-label="Street / low altitude view" title="Street — low-altitude look at the current point">
       <span class="material-symbols-outlined" aria-hidden="true">add_road</span>
       <span>STREET</span>
-    </button>
-    <button id="quick-view-cockpit" class="quick-view-chip" type="button" data-quick-view="cockpit" aria-label="Cockpit view" title="Cockpit — first-person on a tracked contact">
-      <span class="material-symbols-outlined" aria-hidden="true">flight</span>
-      <span>COCKPIT</span>
-    </button>
-    <button id="quick-view-crt" class="quick-view-chip" type="button" data-quick-view="crt" aria-label="CRT visual preset" title="CRT phosphor preset">
-      <span class="material-symbols-outlined" aria-hidden="true">tv</span>
-      <span>CRT</span>
-    </button>
-    <button id="quick-view-nvg" class="quick-view-chip" type="button" data-quick-view="nvg" aria-label="NVG visual preset" title="Night-vision preset">
-      <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
-      <span>NVG</span>
-    </button>
-    <button id="quick-view-flir" class="quick-view-chip" type="button" data-quick-view="flir" aria-label="FLIR visual preset" title="Thermal FLIR preset">
-      <span class="material-symbols-outlined" aria-hidden="true">thermostat</span>
-      <span>FLIR</span>
-    </button>
-    <button id="quick-view-follow" class="quick-view-chip" type="button" data-quick-view="follow" aria-label="Follow tracked target" title="Orbit / follow the current landmark or tracked target">
-      <span class="material-symbols-outlined" aria-hidden="true">rotate_right</span>
-      <span>FOLLOW</span>
     </button>
   </nav>
   <div id="map-action-dock" class="map-action-dock" role="group" aria-label="Map actions">

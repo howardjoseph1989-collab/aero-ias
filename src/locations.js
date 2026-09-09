@@ -131,6 +131,13 @@ export const GLOBE_VIEW = Object.freeze({
   durationS: 2.8,
 });
 
+/** High-altitude birds-eye over the current point — between street and full globe. */
+export const BIRDS_EYE_VIEW = Object.freeze({
+  heightM: 45000,
+  pitchDeg: -72,
+  durationS: 2.0,
+});
+
 /** Street / low-altitude framing — stays inside the shared street view-scale band. */
 export const STREET_VIEW = Object.freeze({
   heightM: 900,
@@ -167,6 +174,34 @@ export function flyToGlobeView(viewer, options = {}) {
     cancel: options.onCancel,
   });
   return { latitude, longitude, heightM: GLOBE_VIEW.heightM };
+}
+
+/**
+ * Climb to a high-altitude birds-eye look at the current sub-camera point.
+ * Same Cesium flyTo contract as `flyToGlobeView` / `flyToStreetView`.
+ * @param {Cesium.Viewer} viewer
+ * @param {{duration?: number, onComplete?: Function, onCancel?: Function}} options
+ * @returns {{latitude: number, longitude: number, heightM: number}|null}
+ */
+export function flyToBirdsEyeView(viewer, options = {}) {
+  const carto = viewer?.camera?.positionCartographic;
+  if (!carto) return null;
+  const longitude = Cesium.Math.toDegrees(carto.longitude);
+  const latitude = Cesium.Math.toDegrees(carto.latitude);
+  viewer.camera.cancelFlight();
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, BIRDS_EYE_VIEW.heightM),
+    orientation: {
+      heading: viewer.camera.heading,
+      pitch: Cesium.Math.toRadians(BIRDS_EYE_VIEW.pitchDeg),
+      roll: 0,
+    },
+    duration: finitePositive(options.duration) || BIRDS_EYE_VIEW.durationS,
+    endTransform: Cesium.Matrix4.IDENTITY,
+    complete: options.onComplete,
+    cancel: options.onCancel,
+  });
+  return { latitude, longitude, heightM: BIRDS_EYE_VIEW.heightM };
 }
 
 /**

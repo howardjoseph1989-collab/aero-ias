@@ -1,21 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { GLOBE_VIEW, STREET_VIEW } from './locations.js';
+import { BIRDS_EYE_VIEW, GLOBE_VIEW, STREET_VIEW } from './locations.js';
 import { viewScaleForAltitude } from './data/detectionPolicy.js';
 import {
   applyNaturalGlobeControls,
   cameraZoomMovementM,
+  clampNavHudPosition,
+  defaultNavHudPosition,
   naturalGlobeControlPatch,
+  parseNavHudPosition,
   QUICK_VIEW_IDS,
-  styleIdForQuickView,
 } from './quickViews.js';
 
-test('street and globe quick views reuse real altitude bands', () => {
+test('street, birds-eye, and globe quick views reuse real altitude bands', () => {
   assert.equal(viewScaleForAltitude(STREET_VIEW.heightM), 'street');
+  assert.equal(viewScaleForAltitude(BIRDS_EYE_VIEW.heightM), 'regional');
   assert.equal(viewScaleForAltitude(GLOBE_VIEW.heightM), 'global');
   assert.equal(STREET_VIEW.pitchDeg, -32);
+  assert.equal(BIRDS_EYE_VIEW.pitchDeg, -72);
   assert.equal(GLOBE_VIEW.pitchDeg, -90);
+  assert.ok(STREET_VIEW.heightM < BIRDS_EYE_VIEW.heightM);
+  assert.ok(BIRDS_EYE_VIEW.heightM < GLOBE_VIEW.heightM);
 });
 
 test('zoom steps grow with altitude and never collapse to zero', () => {
@@ -36,23 +42,24 @@ test('natural globe controls keep wheel zoom and drag spin enabled', () => {
   assert.equal(controller.inertiaSpin, patch.inertiaSpin);
 });
 
-test('quick-view style chips map onto existing visual presets', () => {
-  assert.deepEqual([...QUICK_VIEW_IDS], ['global', 'street', 'cockpit', 'crt', 'nvg', 'flir', 'follow']);
-  assert.equal(styleIdForQuickView('crt'), 'retro');
-  assert.equal(styleIdForQuickView('nvg'), 'surveillance');
-  assert.equal(styleIdForQuickView('flir'), 'thermal');
-  assert.equal(styleIdForQuickView('global'), null);
-});
-
-test('chrome places every map control on the white-glass bottom bar', () => {
+test('exactly three camera quick views sit on the bottom bar', () => {
+  assert.deepEqual([...QUICK_VIEW_IDS], ['global', 'birds-eye', 'street']);
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
-  assert.match(html, /id="command-dock"[\s\S]*?id="top-center-actions"[^>]*aria-label="Quick views"/);
-  assert.match(html, /id="command-dock"[\s\S]*?id="quick-view-street"/);
-  assert.match(html, /id="command-dock"[\s\S]*?id="map-zoom-out"/);
-  assert.match(html, /id="command-dock"[\s\S]*?id="map-zoom-in"/);
-  assert.match(html, /id="command-dock"[\s\S]*?id="clear-selected-layers"/);
-  assert.match(html, /id="command-dock"[\s\S]*?id="share-btn"/);
+  const dock = html.match(/id="command-dock"[\s\S]*?<\/div>\s*<div id="left-panel-stack"/);
+  assert.ok(dock, 'command dock markup is missing');
+  assert.match(dock[0], /id="top-center-actions"[^>]*aria-label="Quick views"/);
+  assert.match(dock[0], /id="reset-globe-view"/);
+  assert.match(dock[0], /id="quick-view-birds-eye"/);
+  assert.match(dock[0], /id="quick-view-street"/);
+  assert.equal((dock[0].match(/data-quick-view="/g) || []).length, 3);
+  assert.doesNotMatch(html, /id="quick-view-cockpit"|id="quick-view-crt"|id="quick-view-follow"/);
+  assert.match(html, /id="map-nav-hud"/);
+  assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-zoom-out"/);
+  assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-zoom-in"/);
+  assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-nav-spin"/);
+  assert.match(html, /id="map-nav-hud"[\s\S]*?id="map-nav-north"/);
+  assert.doesNotMatch(html, /id="command-dock"[\s\S]*?id="map-zoom-controls"/);
   assert.match(
     css,
     /body:not\(\.cockpit-mode\) #left-panel-stack\s*\{[\s\S]*?bottom:\s*var\(--chrome-bottom-features\)/,
@@ -61,6 +68,23 @@ test('chrome places every map control on the white-glass bottom bar', () => {
     css,
     /body:not\(\.cockpit-mode\) #right-context-rail\s*\{[\s\S]*?bottom:\s*var\(--chrome-bottom-features\)/,
   );
+  assert.match(css, /#map-nav-hud\s*\{[\s\S]*?position:\s*fixed;/);
   assert.match(css, /White glass chrome/);
   assert.match(css, /border: 2px solid #ffffff/);
+});
+
+test('nav HUD positions stay clamped to the viewport', () => {
+  assert.deepEqual(
+    clampNavHudPosition({ left: -40, top: -10, hudWidth: 80, hudHeight: 200, viewWidth: 400, viewHeight: 300 }),
+    { left: 8, top: 8 },
+  );
+  assert.deepEqual(
+    clampNavHudPosition({ left: 900, top: 800, hudWidth: 80, hudHeight: 200, viewWidth: 400, viewHeight: 300 }),
+    { left: 312, top: 92 },
+  );
+  assert.equal(parseNavHudPosition({ left: 12, top: 40 })?.left, 12);
+  assert.equal(parseNavHudPosition({ left: 'nope', top: 1 }), null);
+  const fallback = defaultNavHudPosition({ viewWidth: 1280, viewHeight: 720, hudWidth: 88, hudHeight: 260 });
+  assert.ok(fallback.left > 1000);
+  assert.ok(fallback.top > 70);
 });
